@@ -9,8 +9,8 @@ Collection of formulas and macros to use in Microsoft Excel.
 ```
 # OLS
 
-y: n x 1
-X: n x m
+y: m x 1
+X: m x n
 returns: m x 1
 
 =LAMBDA(y;X;MMULT(MMULT(MINVERSE(MMULT(TRANSPOSE(X);X));TRANSPOSE(X));y))
@@ -20,8 +20,8 @@ returns: m x 1
 ```
 # BVLS - using recursion
 
-y: n x 1
-X: n x m
+y: m x 1
+X: m x n
 lbound: m x 1
 ubound: m x 1
 learning_rate: number, e.g. 0.00004
@@ -43,8 +43,8 @@ returns: m x 1
 
 # BVLS - using loop
 
-y: n x 1
-X: n x m
+y: m x 1
+X: m x n
 lbound: m x 1
 ubound: m x 1
 iterations: number, e.g. 1000
@@ -76,48 +76,48 @@ returns: m x 1
 ```
 # SUMROW
 
-A: n x m
-returns: 1 x m
+A: m x n
+returns: 1 x n
 
 =LAMBDA(A;MMULT(SEQUENCE(;ROWS(A);1;0);A))
 
 
 # SUMCOLUMN
 
-A: n x m
-returns: n x 1
+A: m x n
+returns: m x 1
 
 =LAMBDA(A;MMULT(A;SEQUENCE(COLUMNS(A);;1;0)))
 
 
 # MAXROW
 
-A: n x m
-returns: 1 x m
+A: m x n
+returns: 1 x n
 
 =LAMBDA(A;MAP(SEQUENCE(;COLUMNS(A));LAMBDA(i;MAX(INDEX(A;;i)))))
 
 
 # MAXCOLUMN
 
-A: n x m
-returns: n x 1
+A: m x n
+returns: m x 1
 
 =LAMBDA(A;MAP(SEQUENCE(ROWS(A));LAMBDA(i;MAX(INDEX(A;i)))))
 
 
 # MINROW
 
-A: n x m
-returns: 1 x m
+A: m x n
+returns: 1 x n
 
 =LAMBDA(A;MAP(SEQUENCE(;COLUMNS(A));LAMBDA(i;MIN(INDEX(A;;i)))))
 
 
 # MINCOLUMN
 
-A: n x m
-returns: n x 1
+A: m x n
+returns: m x 1
 
 =LAMBDA(A;MAP(SEQUENCE(ROWS(A));LAMBDA(i;MIN(INDEX(A;i)))))
 ```
@@ -127,7 +127,7 @@ returns: n x 1
 ```
 # TAKE
 
-array: n x m
+array: m x n
 n: number
 
 =LAMBDA(array;n;FILTER(array;SEQUENCE(ROWS(array))<=n))
@@ -135,7 +135,7 @@ n: number
 
 # SKIP
 
-array: n x m
+array: m x n
 n: number
 
 =LAMBDA(array;n;FILTER(array;SEQUENCE(ROWS(array))>n))
@@ -151,4 +151,38 @@ column_name: string
 =LAMBDA(table_array;column_name;INDEX(OFFSET(table_array;1;0;ROWS(table_array)-1;COLUMNS(table_array));;MATCH(column_name;OFFSET(table_array;0;0;1;COLUMNS(table_array));0)))
 ```
 
+#### Data manipulation
 
+```
+# VSTACK
+
+A: m_a x n_a
+B: m_b x n_b
+returns: m_a + m_b x max(n_a,n_b)
+
+LAMBDA(A;B;
+  LET(
+    m_a;ROWS(A);
+    m_b;ROWS(B);
+    n_a;COLUMNS(A);
+    n_b;COLUMNS(B);
+    n;MAX(n_a;n_b);
+    MAKEARRAY(m_a+m_b;n;LAMBDA(row;col;IF(row<=m_a;INDEX(A;row;col);INDEX(B;row-m_a;col))))))
+
+
+# RESHAPE
+
+A: m_a x n_a
+m: number
+returns: m x (m_a*n_a)/m
+
+=LAMBDA(A;m;
+  LET(
+    m_a;ROWS(A);
+    n_a;COLUMNS(A);
+    n;(m_a*n_a)/m;
+    MAKEARRAY(m;n;LAMBDA(row;col;
+      LET(
+        i;(col-1)*m+row-1;
+        INDEX(A;i/n_a+1;MOD(i;n_a)+1))))))
+```
