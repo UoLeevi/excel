@@ -145,10 +145,10 @@ n: number
 ```
 # CLOOKUP
 
-table_array: range
-column_name: string
+table: range
+colname: string
 
-=LAMBDA(table_array;column_name;INDEX(OFFSET(table_array;1;0;ROWS(table_array)-1;COLUMNS(table_array));;MATCH(column_name;OFFSET(table_array;0;0;1;COLUMNS(table_array));0)))
+=LAMBDA(table;colname;INDEX(OFFSET(table;1;0;ROWS(table)-1;COLUMNS(table));;MATCH(colname;OFFSET(table;0;0;1;COLUMNS(table));0)))
 ```
 
 #### Data manipulation
@@ -160,7 +160,7 @@ A: m_a x n_a
 B: m_b x n_b
 returns: m_a + m_b x max(n_a,n_b)
 
-LAMBDA(A;B;
+=LAMBDA(A;B;
   LET(
     m_a;ROWS(A);
     m_b;ROWS(B);
@@ -168,6 +168,22 @@ LAMBDA(A;B;
     n_b;COLUMNS(B);
     n;MAX(n_a;n_b);
     MAKEARRAY(m_a+m_b;n;LAMBDA(row;col;IF(row<=m_a;INDEX(A;row;col);INDEX(B;row-m_a;col))))))
+
+
+# HSTACK
+
+A: m_a x n_a
+B: m_b x n_b
+returns: max(m_a,m_b) x n_a + n_b
+
+=LAMBDA(A;B;
+  LET(
+    m_a;ROWS(A);
+    m_b;ROWS(B);
+    n_a;COLUMNS(A);
+    n_b;COLUMNS(B);
+    m;MAX(m_a;m_b);
+    MAKEARRAY(m;n_a+n_b;LAMBDA(row;col;IF(col<=n_a;INDEX(A;row;col);INDEX(B;row;col-n_a))))))
 
 
 # RESHAPE
@@ -180,9 +196,44 @@ returns: m x (m_a*n_a)/m
   LET(
     m_a;ROWS(A);
     n_a;COLUMNS(A);
-    n;(m_a*n_a)/m;
-    MAKEARRAY(m;n;LAMBDA(row;col;
-      LET(
-        i;(col-1)*m+row-1;
-        INDEX(A;i/n_a+1;MOD(i;n_a)+1))))))
+    n;(m_a*n_a)/m+N(MOD(m_a*n_a;m)>0);
+    r;SEQUENCE(m);
+    c;SEQUENCE(;n);
+    i;(c-1)*m+r-1;
+    INDEX(A;MOD(i;m_a)+1;i/m_a+1)))
+
+
+# FLATTEN
+
+A: m x n
+returns: m*n x 1
+
+=LAMBDA(A;
+  LET(
+    m_a;ROWS(A);
+    n_a;COLUMNS(A);
+    m;m_a*n_a;
+    i;SEQUENCE(m;;0);
+    INDEX(A;MOD(i;m_a)+1;i/m_a+1)))
+
+
+# COLTRANSFORM_CLASSIFICATION
+
+=LAMBDA(table;colname;exclude_threshold;
+  LET(
+    A;CLOOKUP(table;colname);
+    classifications;TRANSPOSE(SKIP(SORT(UNIQUE(FILTER(A;COUNTIF(A;A)>exclude_threshold)));1));
+    colnames;colname&"_"&classifications;
+    function;LAMBDA(table;N(CLOOKUP(table;colname)=classifications));
+    TRANSPOSE(HSTACK(function;colnames))))
+
+
+# COLTRANSFORM
+
+=LAMBDA(transform_info;table;
+  LET(
+    function;INDEX(transform_info;1;1);
+    colnames;SKIP(transform_info;1);
+    VSTACK(TRANSPOSE(colnames);function(table))))
+
 ```
