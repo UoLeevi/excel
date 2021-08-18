@@ -71,6 +71,55 @@ returns: m x 1
     TRANSPOSE(y_max/x_max)*REDUCE(_w;SEQUENCE(_iterations);GRADIENT_DESCENT_BVLS)))
 ```
 
+#### Constrained least squares
+
+```
+# LCS
+
+=LAMBDA(y;X;[constraint_function];[w];[iterations];[a];[b_1];[b_2];[e];
+  LET(
+    iterations;IF(ISOMITTED(iterations);1000;iterations);
+    a;IF(ISOMITTED(a);0.001;a);
+    b_1;IF(ISOMITTED(b_1);0.9;b_1);
+    b_2;IF(ISOMITTED(b_2);0.999;b_2);
+    e;IF(ISOMITTED(e);0.00000001;e);
+    y_max;MAXROW(y);
+    x_max;MAXROW(X);
+    _ones_n;SEQUENCE(ROWS(X);;1;0);
+    _ones_m;SEQUENCE(COLUMNS(X);;1;0);
+    _y;y/y_max;
+    _X;X/x_max;
+    scale_w;TRANSPOSE(x_max/y_max);
+    scale_w_inv;TRANSPOSE(y_max/x_max);
+    w;IF(ISOMITTED(w);SUM(_y)/SUM(MMULT(_X;_ones_m))*_ones_m;scale_w*w);
+    m;SEQUENCE(ROWS(w);COLUMNS(w);0;0);
+    v;SEQUENCE(ROWS(w);COLUMNS(w);0;0);
+    state;HSTACK(HSTACK(m;v);w);
+    ADAM;LAMBDA(state;t;
+      LET(
+        _m;INDEX(state;SEQUENCE(ROWS(state));1);
+        _v;INDEX(state;SEQUENCE(ROWS(state));2);
+        _w;INDEX(state;SEQUENCE(ROWS(state));3);
+        g;MMULT(TRANSPOSE((MMULT(_X;_w)-_y)*_X);_ones_n);
+        m;b_1*_m+(1-b_1)*g;
+        v;b_2*_v+(1-b_2)*(g^2);
+        _a;a*SQRT(1-b_2^t)/(1-b_1^t);
+        w_ols;_w-_a*m/(SQRT(v)+e);
+        w;IF(ISOMITTED(constraint_function);w_ols;scale_w*constraint_function(scale_w_inv*w_ols));
+        HSTACK(HSTACK(m;v);w)));
+    result;REDUCE(state;SEQUENCE(iterations;;1);ADAM);
+    scale_w_inv*INDEX(result;SEQUENCE(ROWS(result));3)))
+
+
+# BOX_CONSTRAINT
+
+=LAMBDA(lbound;ubound;
+  LAMBDA(w;
+    LET(
+      w_lbounded;IF(w<lbound;lbound;w);
+      IF(w_lbounded>ubound;ubound;w_lbounded))))
+```
+
 #### Aggregation functions
 
 ```
@@ -167,7 +216,9 @@ returns: m_a + m_b x max(n_a,n_b)
     n_a;COLUMNS(A);
     n_b;COLUMNS(B);
     n;MAX(n_a;n_b);
-    MAKEARRAY(m_a+m_b;n;LAMBDA(row;col;IF(row<=m_a;INDEX(A;row;col);INDEX(B;row-m_a;col))))))
+    i;SEQUENCE(m_a+m_b);
+    j;SEQUENCE(;n);
+    IF(i<=m_a;INDEX(A;i;j);INDEX(B;i-m_a;j))))
 
 
 # HSTACK
@@ -183,7 +234,9 @@ returns: max(m_a,m_b) x n_a + n_b
     n_a;COLUMNS(A);
     n_b;COLUMNS(B);
     m;MAX(m_a;m_b);
-    MAKEARRAY(m;n_a+n_b;LAMBDA(row;col;IF(col<=n_a;INDEX(A;row;col);INDEX(B;row;col-n_a))))))
+    i;SEQUENCE(m);
+    j;SEQUENCE(;n_a+n_b);
+    IF(j<=n_a;INDEX(A;i;j);INDEX(B;i;j-n_a))))
 
 
 # RESHAPE
