@@ -106,7 +106,7 @@ returns: m x 1
         _a;a*SQRT(1-b_2^t)/(1-b_1^t);
         w_ols;_w-_a*m/(SQRT(v)+e);
         w;IF(ISOMITTED(constraint_function);w_ols;scale_w*constraint_function(scale_w_inv*w_ols));
-        HSTACK(HSTACK(m;v);w)));
+        CHOOSE({1,2,3};m;v;w)));
     result;REDUCE(state;SEQUENCE(iterations;;1);ADAM);
     scale_w_inv*INDEX(result;SEQUENCE(ROWS(result));3)))
 
@@ -268,25 +268,23 @@ returns: m*n x 1
     m;m_a*n_a;
     i;SEQUENCE(m;;0);
     INDEX(A;MOD(i;m_a)+1;i/m_a+1)))
+```
 
+#### Data preparation
 
-# COLTRANSFORM_CLASSIFICATION
+```
+# CREATECOLS
 
-=LAMBDA(table;colname;exclude_threshold;
+=LAMBDA(table;colname;[coltype];[data_table];
   LET(
+    data_table;IF(ISOMITTED(data_table);table;data_table);
     A;CLOOKUP(table;colname);
-    classifications;TRANSPOSE(SKIP(SORT(UNIQUE(FILTER(A;COUNTIF(A;A)>exclude_threshold)));1));
-    colnames;colname&"_"&classifications;
-    function;LAMBDA(table;N(CLOOKUP(table;colname)=classifications));
-    TRANSPOSE(HSTACK(function;colnames))))
 
+    IF(coltype="classification";LET(
+      classifications;TRANSPOSE(SKIP(SORT(UNIQUE(A));1));
+      colnames;colname&"_"&classifications;
+      data;N(CLOOKUP(data_table;colname)=classifications);
+      VSTACK(colnames;data));
 
-# COLTRANSFORM
-
-=LAMBDA(transform_info;table;
-  LET(
-    function;INDEX(transform_info;1;1);
-    colnames;SKIP(transform_info;1);
-    VSTACK(TRANSPOSE(colnames);function(table))))
-
+    VSTACK(colname;CLOOKUP(data_table;colname)))))
 ```
