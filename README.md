@@ -273,18 +273,37 @@ returns: m*n x 1
 #### Data preparation
 
 ```
-# CREATECOLS
+# PREPARECOLS
 
 =LAMBDA(table;colname;[coltype];[data_table];
   LET(
     data_table;IF(ISOMITTED(data_table);table;data_table);
     A;CLOOKUP(table;colname);
+    B;CLOOKUP(data_table;colname);
+
+    IF(coltype="intercept";LET(
+      data;SEQUENCE(ROWS(data_table)-1;;1;0);
+      VSTACK(colname;data));
 
     IF(coltype="classification";LET(
       classifications;TRANSPOSE(SKIP(SORT(UNIQUE(A));1));
       colnames;colname&"_"&classifications;
-      data;N(CLOOKUP(data_table;colname)=classifications);
+      data;N(B=classifications);
       VSTACK(colnames;data));
 
-    VSTACK(colname;CLOOKUP(data_table;colname)))))
+    IF(coltype="number+dummy";LET(
+      colnames;CHOOSE({1,2};colname&"_dummy";colname&"_value");
+      data;CHOOSE({1,2};N(ISNUMBER(--B));IF(ISNUMBER(--B);--B;0));
+      VSTACK(colnames;data));
+
+    IF(coltype="distance-from-max";LET(
+      data;MAX(A)-B;
+      VSTACK(colname;data));
+
+    IF(coltype="distance-from-max+dummy";LET(
+      colnames;CHOOSE({1,2};colname&"_dummy";colname&"_value");
+      data;CHOOSE({1,2};N(ISNUMBER(--B));IF(ISNUMBER(--B);MAX(FILTER(--A;ISNUMBER(--A)))-B;0));
+      VSTACK(colnames;data));
+
+    VSTACK(colname;B))))))))
 ```
