@@ -176,18 +176,34 @@ returns: m x 1
 ```
 # TAKE
 
-array: m x n
-n: number
+A: m x n
+i: number
+j: number
+returns: i x j
 
-=LAMBDA(array;n;FILTER(array;SEQUENCE(ROWS(array))<=n))
+=LAMBDA(A;[i];[j];
+  LET(
+    m;ROWS(A);
+    n;COLUMNS(A);
+    i;IF(ISOMITTED(i);m;i);
+    j;IF(ISOMITTED(j);n;j);
+    INDEX(A;SEQUENCE(i);SEQUENCE(;j))))
 
 
 # SKIP
 
-array: m x n
-n: number
+A: m x n
+i: number
+j: number
+returns: m-i x n-j 
 
-=LAMBDA(array;n;FILTER(array;SEQUENCE(ROWS(array))>n))
+=LAMBDA(A;[i];[j];
+  LET(
+    m;ROWS(A);
+    n;COLUMNS(A);
+    i;IF(ISOMITTED(i);0;i);
+    j;IF(ISOMITTED(j);0;j);
+    INDEX(A;SEQUENCE(m-i;;i+1);SEQUENCE(;n-j;j+1))))
 ```
 
 #### Lookup table column values
