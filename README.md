@@ -323,3 +323,60 @@ returns: m*n x 1
 
     VSTACK(colname;B))))))))
 ```
+
+#### Resampling
+
+```
+# RANDOMARRAY
+
+m: number
+seed: number
+returns: m x 1
+
+=LAMBDA([m];[seed];
+  LET(
+    m;IF(ISOMITTED(m);1;m);
+    seed;IF(ISOMITTED(seed);1234;seed);
+    lcg_parkmiller;LAMBDA(seed;i;MOD(48271*seed;2^31-1));
+    SKIP(SCAN(seed;SEQUENCE(m+1);lcg_parkmiller);1)/(2^31-1)))
+
+
+# SAMPLE
+
+A: m_a x n
+m: number
+replacement: logical
+seed: number
+returns: m x n
+
+=LAMBDA(A;[m];[replacement];[seed];
+  LET(
+    m_a;ROWS(A);
+    replacement;IF(ISOMITTED(replacement);IF(ISOMITTED(m);TRUE;FALSE);replacement);
+    m;IF(ISOMITTED(m);m_a;m);
+    seed;IF(ISOMITTED(seed);1234;seed);
+    INDEX(A;IF(replacement;
+      RANDOMARRAY(m;seed)*(m_a-1)+1;
+      TAKE(SORTBY(SEQUENCE(m_a);RANDOMARRAY(m_a;seed));m));SEQUENCE(;COLUMNS(A)))))
+
+
+# BOOTSTRAP
+
+TODO: nested arrays are not supported
+
+=LAMBDA(y;X;function;r;[seed];
+  LET(
+    y_X;HSTACK(y;X);
+    seed;IF(ISOMITTED(seed);1234;seed);
+    SCAN(0;SEQUENCE(r;;seed);LAMBDA(a;seed;LET(
+      s;SAMPLE(y_X;;;seed);
+      y;TAKE(s;;1);
+      X;SKIP(s;;1);
+      function(y;X))))))
+
+
+
+
+
+
+```
