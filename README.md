@@ -297,6 +297,10 @@ returns: m*n x 1
     A;CLOOKUP(table;colname);
     B;CLOOKUP(data_table;colname);
 
+    IF(ISNONTEXT(coltype);LET(
+      data;BYROW(B;coltype);
+      VSTACK(colname;data));
+
     IF(coltype="intercept";LET(
       data;SEQUENCE(ROWS(data_table)-1;;1;0);
       VSTACK(colname;data));
@@ -321,7 +325,7 @@ returns: m*n x 1
       data;CHOOSE({1,2};N(ISNUMBER(--B));IF(ISNUMBER(--B);MAX(FILTER(--A;ISNUMBER(--A)))-B;0));
       VSTACK(colnames;data));
 
-    VSTACK(colname;B))))))))
+    VSTACK(colname;B)))))))))
 ```
 
 #### Resampling
