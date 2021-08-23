@@ -297,7 +297,7 @@ returns: m*n x 1
     A;CLOOKUP(table;colname);
     B;CLOOKUP(data_table;colname);
 
-    IF(ISNONTEXT(coltype);LET(
+    IF(AND(NOT(ISOMITTED(coltype));ISNONTEXT(coltype));LET(
       data;BYROW(B;coltype);
       VSTACK(colname;data));
 
