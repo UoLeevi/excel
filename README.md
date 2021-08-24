@@ -219,6 +219,24 @@ colname: string
 #### Data manipulation
 
 ```
+# SPLIT
+
+string: text
+separator: character
+returns: m x 1
+
+=LAMBDA(string;separator; 
+  LET(
+    string;separator&string&separator;
+    char_indexes;SEQUENCE(LEN(string));
+    chars;MID(string;char_indexes;1);
+    sep_indexes;FILTER(char_indexes;chars=separator);
+    indexes;SEQUENCE(ROWS(sep_indexes)-1);
+    start_nums;INDEX(sep_indexes;indexes)+1;
+    num_chars;INDEX(sep_indexes;indexes+1)-start_nums;
+    MID(string;start_nums;num_chars)))
+
+
 # VSTACK
 
 A: m_a x n_a
