@@ -213,15 +213,19 @@ returns: m-i x n-j
 table: range
 colname: string
 
-=LAMBDA(table;colname;INDEX(OFFSET(table;1;0;ROWS(table)-1;COLUMNS(table));;MATCH(colname;OFFSET(table;0;0;1;COLUMNS(table));0)))
+=LAMBDA(table;colname; 
+  LET(
+    colname;TRANSPOSE(TEXTSPLIT(colname;";"));
+    INDEX(table;SEQUENCE(ROWS(table)-1)+1;MATCH(colname;INDEX(table;1;SEQUENCE(;COLUMNS(table)));0))))
+
 ```
 
 #### Data manipulation
 
 ```
-# SPLIT
+# TEXTSPLIT
 
-string: text
+string: string
 separator: character
 returns: m x 1
 
