@@ -17,6 +17,7 @@ returns: m x 1
 ```
 
 #### Bounded variable least squares (implemented using gradient descent)
+
 ```
 # BVLS - using recursion
 
@@ -105,7 +106,7 @@ returns: m x 1
         v;b_2*_v+(1-b_2)*(g^2);
         _a;a*SQRT(1-b_2^t)/(1-b_1^t);
         w_ols;_w-_a*m/(SQRT(v)+e);
-        w;IF(ISOMITTED(constraint_function);w_ols;scale_w*constraint_function(scale_w_inv*w_ols));
+        w;IF(ISOMITTED(constraint_function);w_ols;scale_w*constraint_function(scale_w_inv*w_ols;scale_w_inv*(w_ols-_w);scale_w_inv*g));
         CHOOSE({1,2,3};m;v;w)));
     result;REDUCE(state;SEQUENCE(iterations;;1);ADAM);
     scale_w_inv*INDEX(result;SEQUENCE(ROWS(result));3)))
@@ -114,10 +115,18 @@ returns: m x 1
 # BOX_CONSTRAINT
 
 =LAMBDA(lbound;ubound;
-  LAMBDA(w;
+  LAMBDA(w;step;g;
     LET(
       w_lbounded;IF(w<lbound;lbound;w);
       IF(w_lbounded>ubound;ubound;w_lbounded))))
+
+# LASSO_CONSTRAINT
+
+=LAMBDA(reg;
+  LAMBDA(w;step;g;
+    LET(
+      a;step/g*reg;
+      IF(w>a;w-a;IF(w<-a;w+a;0)))))
 ```
 
 #### Aggregation functions
@@ -195,7 +204,7 @@ returns: i x j
 A: m x n
 i: number
 j: number
-returns: m-i x n-j 
+returns: m-i x n-j
 
 =LAMBDA(A;[i];[j];
   LET(
@@ -207,13 +216,14 @@ returns: m-i x n-j
 ```
 
 #### Lookup table column values
+
 ```
 # CLOOKUP
 
 table: range
 colname: string
 
-=LAMBDA(table;colname; 
+=LAMBDA(table;colname;
   LET(
     colname;TRANSPOSE(TEXTSPLIT(colname;";"));
     INDEX(table;SEQUENCE(ROWS(table)-1)+1;MATCH(colname;INDEX(table;1;SEQUENCE(;COLUMNS(table)));0))))
@@ -229,7 +239,7 @@ string: string
 separator: character
 returns: m x 1
 
-=LAMBDA(string;separator; 
+=LAMBDA(string;separator;
   LET(
     string;separator&string&separator;
     char_indexes;SEQUENCE(LEN(string));
