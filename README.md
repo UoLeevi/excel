@@ -326,10 +326,14 @@ returns: m*n x 1
 =LAMBDA(table;colname;[coltype];[data_table];
   LET(
     data_table;IF(ISOMITTED(data_table);table;data_table);
+    colname;TRANSPOSE(TEXTSPLIT(colname;";"));
     A;CLOOKUP(table;colname);
     B;CLOOKUP(data_table;colname);
 
-    IF(AND(NOT(ISOMITTED(coltype));ISNONTEXT(coltype));LET(
+    IF(ISOMITTED(coltype);
+      VSTACK(colname;B);
+
+    IF(ISNONTEXT(coltype);LET(
       data;BYROW(B;coltype);
       VSTACK(colname;data));
 
@@ -357,7 +361,7 @@ returns: m*n x 1
       data;CHOOSE({1,2};N(ISNUMBER(--B));IF(ISNUMBER(--B);MAX(FILTER(--A;ISNUMBER(--A)))-B;0));
       VSTACK(colnames;data));
 
-    VSTACK(colname;B)))))))))
+    VSTACK(colname;B))))))))))
 ```
 
 #### Resampling
