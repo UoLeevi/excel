@@ -75,7 +75,7 @@ returns: m x 1
 #### Constrained least squares
 
 ```
-# LCS
+# CLS
 
 =LAMBDA(y;X;[constraint_function];[w];[iterations];[a];[b_1];[b_2];[e];
   LET(
