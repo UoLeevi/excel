@@ -287,6 +287,13 @@ returns: max(m_a,m_b) x n_a + n_b
     IF(j<=n_a;INDEX(A;i;j);INDEX(B;i;j-n_a))))
 
 
+# DICT
+
+=LAMBDA(key1;value1;[d];
+  LAMBDA(key;
+    IF(key=key1;value1;d(key)))
+
+
 # RESHAPE
 
 A: m_a x n_a
