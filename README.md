@@ -341,7 +341,7 @@ returns: m*n x 1
       VSTACK(colname;B);
 
     IF(ISNONTEXT(coltype);LET(
-      data;BYROW(B;coltype);
+      data;IF(COLUMNS(B)>1;BYROW(B;coltype);MAP(B;coltype));
       VSTACK(colname;data));
 
     IF(coltype="intercept";LET(
