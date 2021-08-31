@@ -224,9 +224,7 @@ table: range
 colname: string
 
 =LAMBDA(table;colname;
-  LET(
-    colname;TRANSPOSE(TEXTSPLIT(colname;";"));
-    INDEX(table;SEQUENCE(ROWS(table)-1)+1;MATCH(colname;INDEX(table;1;SEQUENCE(;COLUMNS(table)));0))))
+  INDEX(table;SEQUENCE(ROWS(table)-1)+1;MATCH(colname;INDEX(table;1;SEQUENCE(;COLUMNS(table)));0)))
 
 ```
 
@@ -344,31 +342,32 @@ returns: m*n x 1
       data;IF(COLUMNS(B)>1;BYROW(B;coltype);MAP(B;coltype));
       VSTACK(colname;data));
 
-    IF(coltype="intercept";LET(
-      data;SEQUENCE(ROWS(data_table)-1;;1;0);
-      VSTACK(colname;data));
+    SWITCH(coltype;
+      "intercept";LET(
+        data;SEQUENCE(ROWS(data_table)-1;;1;0);
+        VSTACK(colname;data));
 
-    IF(coltype="classification";LET(
-      classifications;TRANSPOSE(SKIP(SORT(UNIQUE(A));1));
-      colnames;colname&"_"&classifications;
-      data;N(B=classifications);
-      VSTACK(colnames;data));
+      "classification";LET(
+        classifications;TRANSPOSE(SKIP(SORT(UNIQUE(A));1));
+        colnames;colname&"_"&classifications;
+        data;N(B=classifications);
+        VSTACK(colnames;data));
 
-    IF(coltype="number+dummy";LET(
-      colnames;CHOOSE({1,2};colname&"_dummy";colname&"_value");
-      data;CHOOSE({1,2};N(ISNUMBER(--B));IF(ISNUMBER(--B);--B;0));
-      VSTACK(colnames;data));
+      "number+dummy";LET(
+        colnames;CHOOSE({1,2};colname&"_dummy";colname&"_value");
+        data;CHOOSE({1,2};N(ISNUMBER(--B));IF(ISNUMBER(--B);--B;0));
+        VSTACK(colnames;data));
 
-    IF(coltype="distance-from-max";LET(
-      data;MAX(A)-B;
-      VSTACK(colname;data));
+      "distance-from-max";LET(
+        data;MAX(A)-B;
+        VSTACK(colname;data));
 
-    IF(coltype="distance-from-max+dummy";LET(
-      colnames;CHOOSE({1,2};colname&"_dummy";colname&"_value");
-      data;CHOOSE({1,2};N(ISNUMBER(--B));IF(ISNUMBER(--B);MAX(FILTER(--A;ISNUMBER(--A)))-B;0));
-      VSTACK(colnames;data));
+      "distance-from-max+dummy";LET(
+        colnames;CHOOSE({1,2};colname&"_dummy";colname&"_value");
+        data;CHOOSE({1,2};N(ISNUMBER(--B));IF(ISNUMBER(--B);MAX(FILTER(--A;ISNUMBER(--A)))-B;0));
+        VSTACK(colnames;data));
 
-    VSTACK(colname;B))))))))))
+      NA())))))
 ```
 
 #### Resampling
