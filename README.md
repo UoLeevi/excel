@@ -33,10 +33,10 @@ returns: m x 1
 =LAMBDA(y;X;lbound;ubound;learning_rate;iterations;w;
   IF(iterations=0;w;
     LET(
-      _ones_n;SEQUENCE(ROWS(X);;1;0);
-      _ones_m;SEQUENCE(COLUMNS(X);;1;0);
-      _w;IF(ROWS(w)=COLUMNS(X);w;SUM(y)/SUM(MMULT(X;_ones_m))*_ones_m);
-      w_ols;_w-learning_rate*MMULT(TRANSPOSE((MMULT(X;_w)-y)*X);_ones_n)/ROWS(X);
+      _ones_m;SEQUENCE(ROWS(X);;1;0);
+      _ones_n;SEQUENCE(COLUMNS(X);;1;0);
+      _w;IF(ROWS(w)=COLUMNS(X);w;SUM(y)/SUM(MMULT(X;_ones_n))*_ones_n);
+      w_ols;_w-learning_rate*MMULT(TRANSPOSE((MMULT(X;_w)-y)*X);_ones_m)/ROWS(X);
       w_lbounded;IF(ROWS(lbound)=COLUMNS(X);IF(w_ols<lbound;lbound;w_ols);w_ols);
       w_bounded;IF(ROWS(ubound)=COLUMNS(X);IF(w_lbounded>ubound;ubound;w_lbounded);w_lbounded);
       BVLS(y;X;lbound;ubound;learning_rate;iterations-1;w_bounded))))
@@ -56,16 +56,16 @@ returns: m x 1
   LET(
     x_max;MAXROW(X);
     y_max;MAXROW(y);
-    _ones_n;SEQUENCE(ROWS(X);;1;0);
-    _ones_m;SEQUENCE(COLUMNS(X);;1;0);
+    _ones_m;SEQUENCE(ROWS(X);;1;0);
+    _ones_n;SEQUENCE(COLUMNS(X);;1;0);
     _y;y/y_max;
     _X;X/x_max;
-    _w;SUM(_y)/SUM(MMULT(_X;_ones_m))*_ones_m;
+    _w;SUM(_y)/SUM(MMULT(_X;_ones_n))*_ones_n;
     _iterations;IF(iterations=0;200;iterations);
     _learning_rate;IF(learning_rate=0;0.025;learning_rate);
     GRADIENT_DESCENT_BVLS;LAMBDA(w;_;
       LET(
-        w_ols;w-_learning_rate*MMULT(TRANSPOSE((MMULT(_X;w)-_y)*_X);_ones_n)/ROWS(_X);
+        w_ols;w-_learning_rate*MMULT(TRANSPOSE((MMULT(_X;w)-_y)*_X);_ones_m)/ROWS(_X);
         w_lbounded;IF(ROWS(lbound)=COLUMNS(_X);IF(w_ols<lbound;lbound;w_ols);w_ols);
         w_bounded;IF(ROWS(ubound)=COLUMNS(_X);IF(w_lbounded>ubound;ubound;w_lbounded);w_lbounded);
         w_bounded));
@@ -84,15 +84,15 @@ returns: m x 1
     b_1;IF(ISOMITTED(b_1);0.9;b_1);
     b_2;IF(ISOMITTED(b_2);0.999;b_2);
     e;IF(ISOMITTED(e);0.00000001;e);
-    y_max;MAXROW(y);
-    x_max;MAXROW(X);
-    _ones_n;SEQUENCE(ROWS(X);;1;0);
-    _ones_m;SEQUENCE(COLUMNS(X);;1;0);
+    y_max;MAXROW(ABS(y));
+    x_max;MAXROW(ABS(X));
+    _ones_m;SEQUENCE(ROWS(X);;1;0);
+    _ones_n;SEQUENCE(COLUMNS(X);;1;0);
     _y;y/y_max;
     _X;X/x_max;
     scale_w;TRANSPOSE(x_max/y_max);
     scale_w_inv;TRANSPOSE(y_max/x_max);
-    w;IF(ISOMITTED(w);SUM(_y)/SUM(MMULT(_X;_ones_m))*_ones_m;scale_w*w);
+    w;IF(ISOMITTED(w);SUM(_y)/SUM(MMULT(_X;_ones_n))*_ones_n;scale_w*w);
     m;SEQUENCE(ROWS(w);COLUMNS(w);0;0);
     v;SEQUENCE(ROWS(w);COLUMNS(w);0;0);
     state;HSTACK(HSTACK(m;v);w);
@@ -101,12 +101,13 @@ returns: m x 1
         _m;INDEX(state;SEQUENCE(ROWS(state));1);
         _v;INDEX(state;SEQUENCE(ROWS(state));2);
         _w;INDEX(state;SEQUENCE(ROWS(state));3);
-        g;MMULT(TRANSPOSE((MMULT(_X;_w)-_y)*_X);_ones_n);
+        g;MMULT(TRANSPOSE((MMULT(_X;_w)-_y)*_X);_ones_m);
         m;b_1*_m+(1-b_1)*g;
         v;b_2*_v+(1-b_2)*(g^2);
         _a;a*SQRT(1-b_2^t)/(1-b_1^t);
-        w_ols;_w-_a*m/(SQRT(v)+e);
-        w;IF(ISOMITTED(constraint_function);w_ols;scale_w*constraint_function(scale_w_inv*w_ols;scale_w_inv*(w_ols-_w);scale_w_inv*g));
+        g_adam;m/(SQRT(v)+e);
+        w_ols;_w-_a*g_adam;
+        w;IF(ISOMITTED(constraint_function);w_ols;scale_w*constraint_function(scale_w_inv*w_ols;scale_w_inv*g_adam;_a;scale_w_inv));
         CHOOSE({1,2,3};m;v;w)));
     result;REDUCE(state;SEQUENCE(iterations;;1);ADAM);
     scale_w_inv*INDEX(result;SEQUENCE(ROWS(result));3)))
@@ -115,7 +116,7 @@ returns: m x 1
 # BOX_CONSTRAINT
 
 =LAMBDA(lbound;ubound;
-  LAMBDA(w;step;g;
+  LAMBDA(w;g;a;scale_w_inv;
     LET(
       w_lbounded;IF(w<lbound;lbound;w);
       IF(w_lbounded>ubound;ubound;w_lbounded))))
@@ -123,10 +124,10 @@ returns: m x 1
 # LASSO_CONSTRAINT
 
 =LAMBDA(reg;
-  LAMBDA(w;step;g;
+  LAMBDA(w;g;a;scale_w_inv;
     LET(
-      a;step/g*reg;
-      IF(w>a;w-a;IF(w<-a;w+a;0)))))
+      w_reg;ABS(w)-reg*a*scale_w_inv;
+      IF(w_reg>0;w_reg;0)*SIGN(w))))
 ```
 
 #### Aggregation functions
