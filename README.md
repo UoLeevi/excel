@@ -128,6 +128,15 @@ returns: m x 1
     LET(
       w_reg;ABS(w)-reg*a*scale_w_inv;
       IF(w_reg>0;w_reg;0)*SIGN(w))))
+
+# COMBINE_CONSTRAINTS
+
+=LAMBDA(constraint_1; constraint_2;
+  LAMBDA(w;g;a;scale_w_inv;
+    LET(
+      w_1;constraint_1(w;g;a;scale_w_inv);
+      w_2;constraint_2(w_1;g;a;scale_w_inv);
+      w_2)))
 ```
 
 #### Aggregation functions
