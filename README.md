@@ -331,6 +331,17 @@ returns: m*n x 1
     m;m_a*n_a;
     i;SEQUENCE(m;;0);
     INDEX(A;MOD(i;m_a)+1;i/m_a+1)))
+
+
+# MAPROWS
+
+=LAMBDA(A;function;
+  LET(
+    A_head;TAKE(A;1);
+    A_tail;SKIP(A;1);
+    initial_value;RESHAPE(function(A_head);1);
+    REDUCE(initial_value;A_tail;LAMBDA(B;a_row;
+      VSTACK(B;RESHAPE(function(a_row);1))))))
 ```
 
 #### Data preparation
