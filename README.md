@@ -335,6 +335,10 @@ returns: m*n x 1
 
 # MAPROWS
 
+A: m x n
+function: 1 x n -> 1 x n_out
+returns: m x n_out
+
 =LAMBDA(A;function;
   LET(
     A_head;TAKE(A;1);
