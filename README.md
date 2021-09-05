@@ -230,8 +230,9 @@ returns: m-i x n-j
 ```
 # CLOOKUP
 
-table: range
+table: m x n
 colname: string
+returns m x n_out
 
 =LAMBDA(table;colname;
   INDEX(table;SEQUENCE(ROWS(table)-1)+1;MATCH(colname;INDEX(table;1;SEQUENCE(;COLUMNS(table)));0)))
