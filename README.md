@@ -447,8 +447,71 @@ TODO: nested arrays are not supported
       function(y;X))))))
 
 
+```
 
+### Miscellaneous
 
+#### SEO related functions
 
+```
+
+# CLUSTER_KEYWORDS
+
+=LAMBDA(keywords;urls;[match_count];
+  LET(
+    match_count;IF(ISOMITTED(match_count);4;match_count);
+
+    \1;"Helper functions";
+    get_row;LAMBDA(table;i;INDEX(table;i;SEQUENCE(;COLUMNS(table))));
+
+    \2;"Clustering";
+    uq_keywords;UNIQUE(keywords);
+    uq_urls;UNIQUE(urls);
+    len_keywords;LEN(uq_keywords);
+    count_keywords;ROWS(uq_keywords);
+    sorted_keywords;SORTBY(uq_keywords;len_keywords);
+    seq;SEQUENCE(count_keywords);
+    keyword_pair_common_url_count_matrix;COUNTIFS(urls;uq_urls;keywords;TRANSPOSE(sorted_keywords));
+    keyword_pair_mask_matrix;MMULT(TRANSPOSE(keyword_pair_common_url_count_matrix);keyword_pair_common_url_count_matrix)>=match_count;
+    keyword_match_count;MMULT(--keyword_pair_mask_matrix;SEQUENCE(COLUMNS(keyword_pair_mask_matrix);;1;0));
+    keyword_pair_matrix;SORTBY(TRANSPOSE(IF(keyword_pair_mask_matrix;sorted_keywords;""));keyword_match_count;-1);
+    clusters_matrix;merge_rows_with_overlap(keyword_pair_matrix);
+    cluster_size;BYROW(clusters_matrix;LAMBDA(cluster;SUM(--(cluster<>""))));
+    clusters;FILTER(clusters_matrix;cluster_size>1);
+    no_clusters;FILTER(clusters_matrix;cluster_size=1);
+    no_cluster_row;REDUCE(get_row(no_clusters;1);SEQUENCE(ROWS(no_clusters)-1;;2);LAMBDA(agg_row;i;LET(
+      current_row;get_row(no_clusters;i);
+      IF(current_row="";agg_row;current_row))));
+    clusters_all;VSTACK(clusters;no_cluster_row);
+    empty_column;INDEX("";SEQUENCE(ROWS(clusters_all)-1;;;0));
+    extra_column_for_no_cluster;VSTACK(empty_column;"(no cluster)");
+    result_matrix;HSTACK(extra_column_for_no_cluster;clusters_all);
+    clusters_text;BYROW(result_matrix;LAMBDA(cluster;TEXTJOIN(", ";TRUE;cluster)));
+    clusters_text))
+
+# merge_rows_with_overlap (required helper function)
+
+=LAMBDA(table;LET(
+  get_row;LAMBDA(table;i;INDEX(table;i;SEQUENCE(;COLUMNS(table))));
+  merge_row;LAMBDA(table;row_values;i;LET(
+    cols;SEQUENCE(;COLUMNS(table));
+    seq;SEQUENCE(ROWS(table));
+    r;IF(row_values="";INDEX(table;i;cols);row_values);
+    IF(seq=i;r;table)));
+  initial_table;get_row(table;1);
+  REDUCE(initial_table;SEQUENCE(ROWS(table)-1;;2);LAMBDA(agg_table;i;LET(
+    current_row;get_row(table;i);
+    seq_agg_table;SEQUENCE(ROWS(agg_table));
+    overlapping_rows_mask;MAP(seq_agg_table;LAMBDA(agg_i;LET(
+      agg_row;get_row(agg_table;agg_i);
+      agg_row_x;IF(agg_row="";-1;agg_row);
+      OR(agg_row_x=current_row))));
+    overlap_exists;OR(overlapping_rows_mask);
+    IF(overlap_exists;
+      LET(
+        first_overlapping_row_index;XMATCH(TRUE;overlapping_rows_mask);
+        merge_row(agg_table;current_row;first_overlapping_row_index));
+      VSTACK(agg_table;current_row))
+  )))))
 
 ```
