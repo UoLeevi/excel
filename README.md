@@ -190,10 +190,10 @@ returns: m x 1
 =LAMBDA(A;MAP(SEQUENCE(ROWS(A));LAMBDA(i;MIN(INDEX(A;i)))))
 ```
 
-#### Take & Skip
+#### Take & Drop
 
 ```
-# TAKE
+# TAKE (polyfill)
 
 A: m x n
 i: number
@@ -209,7 +209,7 @@ returns: i x j
     INDEX(A;SEQUENCE(i);SEQUENCE(;j))))
 
 
-# SKIP
+# DROP (polyfill)
 
 A: m x n
 i: number
@@ -239,10 +239,27 @@ returns m x n_out
 
 ```
 
+#### Text functions
+
+```
+# TEXTCONTAINSANY
+
+find_text: string | string[]
+within_text: string
+case_sensitive: boolean
+returns: boolean
+
+=LAMBDA(find_text;within_text;[case_sensitive];
+  LET(
+    case_sensitive;IF(ISOMITTED(case_sensitive);FALSE);
+    OR(NOT(ISERROR(SEARCH("*"&find_text&"*";within_text))))))
+
+```
+
 #### Data manipulation
 
 ```
-# TEXTSPLIT
+# TEXTSPLIT (polyfill)
 
 string: string
 separator: character
@@ -260,7 +277,7 @@ returns: m x 1
     MID(string;start_nums;num_chars)))
 
 
-# VSTACK
+# VSTACK (polyfill)
 
 A: m_a x n_a
 B: m_b x n_b
@@ -278,7 +295,7 @@ returns: m_a + m_b x max(n_a,n_b)
     IF(i<=m_a;INDEX(A;i;j);INDEX(B;i-m_a;j))))
 
 
-# HSTACK
+# HSTACK (polyfill)
 
 A: m_a x n_a
 B: m_b x n_b
@@ -343,7 +360,7 @@ returns: m x n_out
 =LAMBDA(A;function;
   LET(
     A_head;TAKE(A;1);
-    A_tail;SKIP(A;1);
+    A_tail;DROP(A;1);
     initial_value;RESHAPE(function(A_head);1);
     REDUCE(initial_value;A_tail;LAMBDA(B;a_row;
       VSTACK(B;RESHAPE(function(a_row);1))))))
@@ -374,7 +391,7 @@ returns: m x n_out
         VSTACK(colname;data));
 
       "classification";LET(
-        classifications;TRANSPOSE(SKIP(SORT(UNIQUE(A));1));
+        classifications;TRANSPOSE(DROP(SORT(UNIQUE(A));1));
         colnames;colname&"_"&classifications;
         data;N(B=classifications);
         VSTACK(colnames;data));
@@ -410,7 +427,7 @@ returns: m x 1
     m;IF(ISOMITTED(m);1;m);
     seed;IF(ISOMITTED(seed);1234;seed);
     lcg_parkmiller;LAMBDA(seed;i;MOD(48271*seed;2^31-1));
-    SKIP(SCAN(seed;SEQUENCE(m+1);lcg_parkmiller);1)/(2^31-1)))
+    DROP(SCAN(seed;SEQUENCE(m+1);lcg_parkmiller);1)/(2^31-1)))
 
 
 # SAMPLE
@@ -443,7 +460,7 @@ TODO: nested arrays are not supported
     SCAN(0;SEQUENCE(r;;seed);LAMBDA(a;seed;LET(
       s;SAMPLE(y_X;;;seed);
       y;TAKE(s;;1);
-      X;SKIP(s;;1);
+      X;DROP(s;;1);
       function(y;X))))))
 
 
