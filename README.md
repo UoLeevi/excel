@@ -392,6 +392,51 @@ returns: m x n_out
                 cartesian_prod(
                   cartesian_prod(a_1;a_2);a_3);a_4);a_5);a_6);a_7);a_8);a_9)))
 
+
+# SPLIT.CARTESIANPRODUCT
+
+=LAMBDA(delimiter;arg_1;[arg_2];[arg_3];[arg_4];[arg_5];[arg_6];[arg_7];[arg_8];[arg_9];
+  LET(
+    split;LAMBDA(x;TEXTSPLIT(x;;delimiter));
+    n_args;IFS(
+      ISOMITTED(arg_2);1;
+      ISOMITTED(arg_3);2;
+      ISOMITTED(arg_4);3;
+      ISOMITTED(arg_5);4;
+      ISOMITTED(arg_6);5;
+      ISOMITTED(arg_7);6;
+      ISOMITTED(arg_8);7;
+      ISOMITTED(arg_9);8;
+      TRUE;9);
+    CHOOSE(n_args;
+      split(arg_1);
+      CARTESIANPRODUCT(split(arg_1);split(arg_2));
+      CARTESIANPRODUCT(split(arg_1);split(arg_2);split(arg_3));
+      CARTESIANPRODUCT(split(arg_1);split(arg_2);split(arg_3);split(arg_4));
+      CARTESIANPRODUCT(split(arg_1);split(arg_2);split(arg_3);split(arg_4);split(arg_5));
+      CARTESIANPRODUCT(split(arg_1);split(arg_2);split(arg_3);split(arg_4);split(arg_5);split(arg_6));
+      CARTESIANPRODUCT(split(arg_1);split(arg_2);split(arg_3);split(arg_4);split(arg_5);split(arg_6);split(arg_7));
+      CARTESIANPRODUCT(split(arg_1);split(arg_2);split(arg_3);split(arg_4);split(arg_5);split(arg_6);split(arg_7);split(arg_8));
+      CARTESIANPRODUCT(split(arg_1);split(arg_2);split(arg_3);split(arg_4);split(arg_5);split(arg_6);split(arg_7);split(arg_8);split(arg_9)))))
+
+
+# MAPARGS
+
+=LAMBDA(args;func;
+  LET(
+    get;LAMBDA(arr;col;INDEX(arr;;col));
+    n_args;COLUMNS(args);
+    CHOOSE(n_args;
+      MAP(get(args;1);func);
+      MAP(get(args;1);get(args;2);func);
+      MAP(get(args;1);get(args;2);get(args;3);func);
+      MAP(get(args;1);get(args;2);get(args;3);get(args;4);func);
+      MAP(get(args;1);get(args;2);get(args;3);get(args;4);get(args;5);func);
+      MAP(get(args;1);get(args;2);get(args;3);get(args;4);get(args;5);get(args;6);func);
+      MAP(get(args;1);get(args;2);get(args;3);get(args;4);get(args;5);get(args;6);get(args;7);func);
+      MAP(get(args;1);get(args;2);get(args;3);get(args;4);get(args;5);get(args;6);get(args;7);get(args;8);func);
+      MAP(get(args;1);get(args;2);get(args;3);get(args;4);get(args;5);get(args;6);get(args;7);get(args;8);get(args;9));func)))
+
 ```
 
 #### Data preparation
