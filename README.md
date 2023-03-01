@@ -364,6 +364,34 @@ returns: m x n_out
     initial_value;RESHAPE(function(A_head);1);
     REDUCE(initial_value;A_tail;LAMBDA(B;a_row;
       VSTACK(B;RESHAPE(function(a_row);1))))))
+
+
+# CARTESIANPRODUCT
+
+=LAMBDA(a_1;[a_2];[a_3];[a_4];[a_5];[a_6];[a_7];[a_8];[a_9]; 
+  LET(
+    cartesian_prod;LAMBDA(set_1;[set_2];
+      IF(ISOMITTED(set_2);
+        set_1;
+        LET(
+          rows_1;ROWS(set_1);
+          rows_2;ROWS(set_2);
+          cols_1;COLUMNS(set_1);
+          cols_2;COLUMNS(set_2);
+          MAKEARRAY(rows_1*rows_2;cols_1+cols_2;
+            LAMBDA(row;col;
+              IF(col<=cols_1;
+                INDEX(set_1;FLOOR.MATH((row-1)/rows_2)+1;col);
+                INDEX(set_2;MOD(row-1;rows_2)+1;col-cols_1)))))));
+    cartesian_prod(
+      cartesian_prod(
+        cartesian_prod(
+          cartesian_prod(
+            cartesian_prod(
+              cartesian_prod(
+                cartesian_prod(
+                  cartesian_prod(a_1;a_2);a_3);a_4);a_5);a_6);a_7);a_8);a_9)))
+
 ```
 
 #### Data preparation
