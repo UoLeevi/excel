@@ -437,6 +437,21 @@ returns: m x n_out
       MAP(get(args;1);get(args;2);get(args;3);get(args;4);get(args;5);get(args;6);get(args;7);get(args;8);func);
       MAP(get(args;1);get(args;2);get(args;3);get(args;4);get(args;5);get(args;6);get(args;7);get(args;8);get(args;9));func)))
 
+
+# HIERARCHIZE
+=LAMBDA(root;keys;parents;sort_key;[level];
+  LET(
+    root_level;IF(ISOMITTED(level);0;level);
+    keys_sorted;SORTBY(keys;sort_key);
+    parents_sorted;SORTBY(parents;sort_key);
+    children;FILTER(keys_sorted;parents_sorted=root;NA());
+    root_record;HSTACK(root;root_level);
+    get_descendants_with_levels;LAMBDA(result;child;VSTACK(result;HIERARCHIZE(child;keys;parents;sort_key;root_level+1)));
+    IF(ISNA(INDEX(children;1;1));
+      root_record;
+      REDUCE(root_record;children;get_descendants_with_levels))))
+
+
 ```
 
 #### Data preparation
