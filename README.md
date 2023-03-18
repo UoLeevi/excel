@@ -451,6 +451,37 @@ returns: m x n_out
     IF(is_leaf;record;REDUCE(record;children;get_descendants_with_levels))))
 
 
+# VISUALIZE.HIERARCHY 
+
+=LAMBDA(hierarchy;
+  LET(
+    tok_last_indent;"   ";
+    tok_middle_indent;"│  ";
+    tok_last_branch;"└─ ";
+    tok_middle_branch;"├─ ";
+    len_tok;LEN(tok_last_indent);
+    root;INDEX(hierarchy;1;1);
+    n_rows;ROWS(hierarchy);
+    reversed_indexes;SEQUENCE(n_rows-2;;n_rows-1;-1);
+    last_key;INDEX(hierarchy;n_rows;1);
+    last_level;INDEX(hierarchy;n_rows;2);
+    last_node;REPT(tok_last_indent;last_level-1)&tok_last_branch&last_key;
+    REDUCE(last_node;reversed_indexes;LAMBDA(tree;idx;
+      LET(
+        key;INDEX(hierarchy;idx;1);
+        level;INDEX(hierarchy;idx;2);
+        next;INDEX(tree;1;1);
+        next_level;INDEX(hierarchy;idx+1;2);
+        common_level;MIN(level;next_level);
+        next_parts;MID(next;SEQUENCE(common_level;;1;len_tok);len_tok);
+        common_parts;SUBSTITUTE(SUBSTITUTE(next_parts;tok_last_branch;tok_middle_indent);tok_middle_branch;tok_middle_indent);
+        stem;IF(level=1;"";TEXTJOIN("";FALSE;TAKE(common_parts;level-1)))&REPT(tok_last_indent;MAX(0;level-common_level-1));
+        next_part_on_same_level;IFERROR(INDEX(next_parts;level);tok_last_indent);
+        has_no_more_siblings;OR(level>next_level;next_part_on_same_level=tok_last_indent);
+        node;stem&IF(has_no_more_siblings;tok_last_branch;tok_middle_branch)&key;
+        VSTACK(node;tree))))))
+
+
 ```
 
 #### Data preparation
