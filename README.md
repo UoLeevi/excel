@@ -590,9 +590,9 @@ TODO: nested arrays are not supported
 
 ```
 
-# DYNAMIC.HYPERLINK
+# LINKADDRESS
 
-=LAMBDA(link_text;row_num;column_num;[sheet_name];[workbook_name];
+=LAMBDA(row_num;column_num;[sheet_name];[workbook_name];
   LET(
     workbook_name;IF(ISOMITTED(workbook_name);
       LET(
@@ -601,8 +601,7 @@ TODO: nested arrays are not supported
         closing_bracket;FIND("]";filename;opening_bracket);
         IF(filename="";"[Book1]";MID(filename;opening_bracket;closing_bracket-opening_bracket+1)));
       "["&workbook_name&"]");
-    cell_address_this_sheet;workbook_name&ADDRESS(row_num;column_num;1;1;sheet_name);
-    HYPERLINK(cell_address_this_sheet;link_text)))
+    workbook_name&ADDRESS(row_num;column_num;1;1;sheet_name)))
 
 ```
 
