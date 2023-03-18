@@ -444,7 +444,7 @@ returns: m x n_out
     parents;IF(ISOMITTED(sort_keys);parents;SORTBY(parents;sort_keys));
     keys;IF(ISOMITTED(sort_keys);keys;SORTBY(keys;sort_keys));
     level;IF(ISOMITTED(level);0;level);
-    children;FILTER(keys;parents=root;NA());
+    children;UNIQUE(FILTER(keys;parents=root;NA()));
     is_leaf;ISNA(INDEX(children;1;1));
     record;HSTACK(root;level;is_leaf);
     get_descendants_with_levels;LAMBDA(result;child;VSTACK(result;HIERARCHIZE(child;keys;parents;;level+1)));
