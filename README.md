@@ -441,17 +441,14 @@ returns: m x n_out
 # HIERARCHIZE
 =LAMBDA(root;keys;parents;[sort_keys];[level];
   LET(
-    sort_by_array;IF(ISOMITTED(sort_keys);keys;sort_keys);
-    root_level;IF(ISOMITTED(level);0;level);
-    keys_sorted;SORTBY(keys;sort_by_array);
-    parents_sorted;SORTBY(parents;sort_by_array);
-    children;FILTER(keys_sorted;parents_sorted=root;NA());
+    parents;IF(ISOMITTED(sort_keys);parents;SORTBY(parents;sort_keys));
+    keys;IF(ISOMITTED(sort_keys);keys;SORTBY(keys;sort_keys));
+    level;IF(ISOMITTED(level);0;level);
+    children;FILTER(keys;parents=root;NA());
     is_leaf;ISNA(INDEX(children;1;1));
-    root_record;HSTACK(root;root_level;is_leaf);
-    get_descendants_with_levels;LAMBDA(result;child;VSTACK(result;HIERARCHIZE(child;keys;parents;sort_by_array;root_level+1)));
-    IF(is_leaf;
-      root_record;
-      REDUCE(root_record;children;get_descendants_with_levels))))
+    record;HSTACK(root;level;is_leaf);
+    get_descendants_with_levels;LAMBDA(result;child;VSTACK(result;HIERARCHIZE(child;keys;parents;;level+1)));
+    IF(is_leaf;record;REDUCE(record;children;get_descendants_with_levels))))
 
 
 ```
