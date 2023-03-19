@@ -317,7 +317,7 @@ returns: max(m_a,m_b) x n_a + n_b
 
 =LAMBDA(key1;value1;[d];
   LAMBDA(key;
-    IF(key=key1;value1;d(key)))
+    IF(key=key1;value1;d(key))))
 
 
 # RESHAPE
@@ -437,21 +437,83 @@ returns: m x n_out
       MAP(get(args;1);get(args;2);get(args;3);get(args;4);get(args;5);get(args;6);get(args;7);get(args;8);func);
       MAP(get(args;1);get(args;2);get(args;3);get(args;4);get(args;5);get(args;6);get(args;7);get(args;8);get(args;9));func)))
 
+```
 
-# HIERARCHIZE
-=LAMBDA(root;keys;parents;[sort_keys];[level];
+#### Hieararchies
+
+```
+
+# HIERARCHIZE 
+
+=LAMBDA(root;keys;parents;[sort_keys];[max_level];[level];
   LET(
     parents;IF(ISOMITTED(sort_keys);parents;SORTBY(parents;sort_keys));
     keys;IF(ISOMITTED(sort_keys);keys;SORTBY(keys;sort_keys));
     level;IF(ISOMITTED(level);0;level);
     children;UNIQUE(FILTER(keys;parents=root;NA()));
+    is_last_level;NOT(OR(ISOMITTED(max_level);level<max_level));
     is_leaf;ISNA(INDEX(children;1;1));
     record;HSTACK(root;level;is_leaf);
-    get_descendants_with_levels;LAMBDA(result;child;VSTACK(result;HIERARCHIZE(child;keys;parents;;level+1)));
-    IF(is_leaf;record;REDUCE(record;children;get_descendants_with_levels))))
+    get_descendants_with_levels;LAMBDA(result;child;VSTACK(result;HIERARCHIZE(child;keys;parents;;max_level;level+1)));
+    IF(OR(is_leaf;is_last_level);record;REDUCE(record;children;get_descendants_with_levels))))
 
 
-# VISUALIZE.HIERARCHY 
+# HIERARCHY_GET
+
+=LAMBDA(hierarchy;key;
+  LET(
+    key_row;XMATCH(key;INDEX(hierarchy;;1));
+    level;INDEX(hierarchy;key_row;2);
+    records_from;DROP(hierarchy;key_row-1);
+    records_after;DROP(records_from;1);
+    next_non_descendant_row;XMATCH(level;INDEX(records_after;;2);-1);
+    extracted_hierarchy;IFS(
+      key_row=1;hierarchy;
+      ISERROR(next_non_descendant_row);records_from;
+      TRUE;TAKE(records_from;next_non_descendant_row-1));
+    adjusted_hierarchy;HSTACK(
+      INDEX(extracted_hierarchy;;1);
+      INDEX(extracted_hierarchy;;2)-level;
+      INDEX(extracted_hierarchy;;3));
+      adjusted_hierarchy))
+
+
+# HIERARCHY_REMOVE
+
+=LAMBDA(hierarchy;remove_key;
+  LET(
+    key_row;XMATCH(remove_key;INDEX(hierarchy;;1));
+    level;INDEX(hierarchy;key_row;2);
+    valid_records_before;TAKE(hierarchy;key_row-1);
+    records_after;DROP(hierarchy;key_row);
+    next_non_descendant_row;XMATCH(level;INDEX(records_after;;2);-1);
+    valid_records_after;DROP(records_after;next_non_descendant_row-1);
+    IFS(
+      key_row=1;valid_records_after;
+      ISERROR(next_non_descendant_row);valid_records_before;
+      TRUE;VSTACK(valid_records_before;valid_records_before))))
+
+
+# HIERARCHY_INSERT
+
+=LAMBDA(base_hierarchy;insert_at_key;insert_hierarchy;[as_sibling];
+  LET(
+    as_sibling;IF(ISOMITTED(as_sibling);FALSE;as_sibling);
+    key_row;XMATCH(insert_at_key;INDEX(base_hierarchy;;1));
+    level;INDEX(base_hierarchy;key_row;2);
+    insert_hierarchy_root_level;INDEX(insert_hierarchy;1;2);
+    adjusted_insert_hierarchy;HSTACK(
+      INDEX(insert_hierarchy;;1);
+      INDEX(insert_hierarchy;;2)-insert_hierarchy_root_level+level+IF(as_sibling;0;1);
+      INDEX(insert_hierarchy;;3));
+    records_before;TAKE(base_hierarchy;key_row);
+    records_after;DROP(base_hierarchy;key_row);
+    IF(key_row=ROWS(base_hierarchy);
+      VSTACK(records_before;adjusted_insert_hierarchy);
+      VSTACK(records_before;adjusted_insert_hierarchy;records_after))))
+
+
+# HIERARCHY_TREE
 
 =LAMBDA(hierarchy;
   LET(
@@ -466,7 +528,7 @@ returns: m x n_out
     last_key;INDEX(hierarchy;n_rows;1);
     last_level;INDEX(hierarchy;n_rows;2);
     last_node;REPT(tok_last_indent;last_level-1)&tok_last_branch&last_key;
-    REDUCE(last_node;reversed_indexes;LAMBDA(tree;idx;
+    tree;REDUCE(last_node;reversed_indexes;LAMBDA(tree;idx;
       LET(
         key;INDEX(hierarchy;idx;1);
         level;INDEX(hierarchy;idx;2);
@@ -479,7 +541,17 @@ returns: m x n_out
         next_part_on_same_level;IFERROR(INDEX(next_parts;level);tok_last_indent);
         has_no_more_siblings;OR(level>next_level;next_part_on_same_level=tok_last_indent);
         node;stem&IF(has_no_more_siblings;tok_last_branch;tok_middle_branch)&key;
-        VSTACK(node;tree))))))
+        VSTACK(node;tree))));
+    SWITCH(n_rows;
+      1;root;
+      2;VSTACK(root;last_node);
+      VSTACK(root;tree)
+    )))
+
+
+# HIERARCHY_TREE_KEYS
+
+=LAMBDA(tree;TEXTAFTER(tree;"─ ";1;;;tree))
 
 
 ```
