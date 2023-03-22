@@ -741,3 +741,67 @@ TODO: nested arrays are not supported
   )))))
 
 ```
+
+
+## VBA Macros
+
+```vb
+
+' For each item in `sheetNames` array, copy `wsTemplate` and call a macro with name `callbackName`
+' Usage:
+'   CopySheetWithParams ActiveSheet, "CopySheetWithParams_Callback_Example", Array("NewSheet1", "NewSheet2")
+'
+Sub CopySheetWithParams( _
+    ByVal wsTemplate As Worksheet, _
+    ByVal callbackName As String, _
+    ByVal sheetNames As Variant, _
+    Optional ByVal Before As Worksheet, _
+    Optional ByVal After As Worksheet)
+    
+    Dim displayAlertsState As Boolean
+    displayAlertsState = Application.DisplayAlerts
+    Application.DisplayAlerts = False
+    
+    If Before Is Nothing And After Is Nothing Then
+        Set After = wsTemplate
+    End If
+    
+    Dim sheetName As Variant
+    Dim ws As Worksheet
+    Dim wb As Workbook
+    Dim idx As Integer
+    
+    If Before Is Nothing Then
+        Set wb = After.Parent
+    Else
+        Set wb = Before.Parent
+    End If
+    
+    For Each sheetName In sheetNames
+        
+        If Before Is Nothing Then
+            idx = After.Index + 1
+            wsTemplate.Copy After:=After
+        Else
+            idx = Before.Index
+            wsTemplate.Copy Before:=Before
+        End If
+        
+        Set ws = wb.Worksheets(idx)
+        Set After = ws
+        ws.Name = sheetName
+        Application.Run callbackName, ws
+    Next
+    
+    Application.DisplayAlerts = displayAlertsState
+    
+End Sub
+
+Sub CopySheetWithParams_Callback_Example( _
+    ws As Worksheet)
+    
+    Debug.Print ws.Name
+    
+End Sub
+
+```
