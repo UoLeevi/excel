@@ -254,6 +254,14 @@ returns: boolean
     case_sensitive;IF(ISOMITTED(case_sensitive);FALSE);
     OR(NOT(ISERROR(SEARCH("*"&find_text&"*";within_text))))))
 
+# TEXTREPLACE
+
+=LAMBDA(text;old_text_new_text_alternating_array;
+  LET(
+    pairs;WRAPROWS(TOROW(old_text_new_text_alternating_array);2);
+    seq;SEQUENCE(ROWS(pairs));
+    REDUCE(text;seq;LAMBDA(result;r;SUBSTITUTE(result;INDEX(pairs;r;1);INDEX(pairs;r;2))))))
+
 ```
 
 #### Data manipulation
