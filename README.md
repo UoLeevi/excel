@@ -1,8 +1,28 @@
 # Excel snippet collection
 
-Collection of formulas and macros to use in Microsoft Excel.
+This library contains a collection of lambda functions and macros that can be used in Microsoft Excel.
 
-## Formulas
+## Importing functions into Excel Workbook
+
+There are two ways to import the lambda functions listed here into your Excel workbook:
+
+1. Manually copy and paste them into the workbook's name manager one by one.
+2. Use the macro `AddLambdaNamedRangesFromFile` to import multiple lambdas programmatically.
+
+### Importing Functions Programmatically
+
+Follow these steps to import the lambda functions programmatically:
+
+1. Import the module ExcelLambdaImport.bas into your workbook.
+2. Call the macro `AddLambdaNamedRangesFromFile` and specify the lambda functions to import.
+
+Here is an example of how to use the `AddLambdaNamedRangesFromFile` macro to import two lambda functions at once:
+
+```vbnet
+AddLambdaNamedRangesFromFile(Array("TEXTREPLACE", "CARTESIANPRODUCT"))
+```
+
+## Lambda functions
 
 #### Ordinary least squares
 
@@ -814,19 +834,29 @@ End Sub
 
 Sub AddLambdaNamedRangesFromFile( _
     ByVal lambdasToImport As Variant, _
-    ByVal filename As String, _
+    Optional ByVal filePathOrUrl As String, _
     Optional ByVal wb As Workbook)
+
+    If filePathOrUrl = Empty Then filePathOrUrl = "https://raw.githubusercontent.com/UoLeevi/excel/main/README.md"
 
     If wb Is Nothing Then Set wb = ActiveWorkbook
 
-    ' Step 1. Read the file contents
-
-    Dim fileNum As Integer
-    fileNum = FreeFile
-    Open filename For Input As #fileNum
+    ' Step 1. Read the file contents or get text from URL
     Dim text As String
-    text = Input$(LOF(fileNum), fileNum)
-    Close #fileNum
+
+    If filePathOrUrl Like "http*://*" Then
+        Dim httpRequest As Object
+        Set httpRequest = CreateObject("WinHttp.WinHttpRequest.5.1")
+        httpRequest.Open "GET", filePathOrUrl, False
+        httpRequest.Send
+        text = httpRequest.ResponseText
+    Else
+        Dim fileNum As Integer
+        fileNum = FreeFile
+        Open filePathOrUrl For Input As #fileNum
+        text = Input$(LOF(filePathOrUrl), fileNum)
+        Close #fileNum
+    End If
 
     ' Step 2. Replace CrLf with Lf
     text = Replace(text, vbCrLf, vbLf)
