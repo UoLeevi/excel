@@ -2,14 +2,14 @@
 
 This library contains a collection of lambda functions and macros that can be used in Microsoft Excel.
 
-## Importing functions into Excel Workbook
+## Adding functions into Excel Workbook
 
 There are two ways to import the lambda functions listed here into your Excel workbook:
 
 1. Manually copy and paste them into the workbook's name manager one by one.
 2. Use the macro `AddLambdaNamedRangesFromFile` to import multiple lambdas programmatically.
 
-### Importing Functions Programmatically
+### Importing functions programmatically
 
 Follow these steps to import the lambda functions programmatically:
 
