@@ -264,6 +264,14 @@ returns: boolean
     LAMBDA(result,idx,VSTACK(result,func(INDEX(data,idx,))))))
 
 
+# APPLYWHILE
+
+=LAMBDA(initial_value,cond_func,func,
+  IF(cond_func(initial_value),
+    APPLYWHILE(func(initial_value),cond_func,func),
+    initial_value))
+
+
 # CARTESIANPRODUCT
 
 =LAMBDA(a_1,[a_2],[a_3],[a_4],[a_5],[a_6],[a_7],[a_8],[a_9],
