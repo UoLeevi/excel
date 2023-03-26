@@ -257,11 +257,11 @@ returns: boolean
 
 # MAPROWS
 
-=LAMBDA(data;func;
+=LAMBDA(data,func,
   REDUCE(
-    func(INDEX(data;1;));
-    SEQUENCE(ROWS(data)-1;;2);
-    LAMBDA(result;idx;VSTACK(result;func(INDEX(data;idx;))))))
+    func(INDEX(data,1,)),
+    SEQUENCE(ROWS(data)-1,,2),
+    LAMBDA(result,idx,VSTACK(result,func(INDEX(data,idx,))))))
 
 
 # CARTESIANPRODUCT
