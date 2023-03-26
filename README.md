@@ -351,16 +351,20 @@ returns: boolean
 
 # HIERARCHIZE
 
-=LAMBDA(root,keys,parents,[sort_keys],[max_level],[level],
+=LAMBDA(root,keys,parents,[sort_keys],[max_level],[level],[filter_key_predicate],
   LET(
     parents,IF(ISOMITTED(sort_keys),parents,SORTBY(parents,sort_keys)),
     keys,IF(ISOMITTED(sort_keys),keys,SORTBY(keys,sort_keys)),
+    lookup_parent,LAMBDA(key,XLOOKUP(key,keys,parents)),
+    not_filter_key_predicate,LAMBDA(key,NOT(filter_key_predicate(key))),
+    filtered_keys,IF(ISOMITTED(filter_key_predicate),keys,FILTER(keys,BYROW(keys,filter_key_predicate(key)))),
+    filtered_parents,IF(ISOMITTED(filter_key_predicate),parents,BYROW(keys,LAMBDA(key,APPLYWHILE(lookup_parent(key),not_filter_key_predicate,lookup_parent)))),
     level,IF(ISOMITTED(level),0,level),
-    children,UNIQUE(FILTER(keys,parents=root,NA())),
+    children,UNIQUE(FILTER(filtered_keys,filtered_parents=root,NA())),
     is_last_level,NOT(OR(ISOMITTED(max_level),level<max_level)),
     is_leaf,ISNA(INDEX(children,1,1)),
     record,HSTACK(root,level,is_leaf),
-    get_descendants_with_levels,LAMBDA(result,child,VSTACK(result,HIERARCHIZE(child,keys,parents,,max_level,level+1))),
+    get_descendants_with_levels,LAMBDA(result,child,VSTACK(result,HIERARCHIZE(child,filtered_keys,filtered_parents,,max_level,level+1))),
     IF(OR(is_leaf,is_last_level),record,REDUCE(record,children,get_descendants_with_levels))))
 
 
