@@ -261,7 +261,10 @@ returns: boolean
   REDUCE(
     func(INDEX(data,1,)),
     SEQUENCE(ROWS(data)-1,,2),
-    LAMBDA(result,idx,VSTACK(result,func(INDEX(data,idx,))))))
+    LAMBDA(result,idx,
+      LET(
+        value,func(INDEX(data,idx,)),
+        IF(ISNA(INDEX(value,1,1)),result,VSTACK(result,value))))))
 
 
 # APPLYWHILE
