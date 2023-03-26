@@ -356,7 +356,7 @@ returns: boolean
     parents,IF(ISOMITTED(sort_keys),parents,SORTBY(parents,sort_keys)),
     keys,IF(ISOMITTED(sort_keys),keys,SORTBY(keys,sort_keys)),
     lookup_parent,LAMBDA(key,XLOOKUP(key,keys,parents)),
-    not_filter_key_predicate,LAMBDA(key,NOT(filter_key_predicate(key))),
+    not_filter_key_predicate,LAMBDA(key,AND(NOT(ISNA(key)),NOT(filter_key_predicate(key)))),
     lookup_filtered_parent,LAMBDA(key,IFNA(APPLYWHILE(lookup_parent(key),not_filter_key_predicate,lookup_parent),"")),
     filtered_keys,IF(ISOMITTED(filter_key_predicate),keys,FILTER(keys,BYROW(keys,filter_key_predicate))),
     filtered_parents,IF(ISOMITTED(filter_key_predicate),parents,BYROW(filtered_keys,lookup_filtered_parent)),
