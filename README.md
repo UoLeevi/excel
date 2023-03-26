@@ -208,41 +208,7 @@ A: m x n
 returns: m x 1
 
 =LAMBDA(A,MAP(SEQUENCE(ROWS(A)),LAMBDA(i,MIN(INDEX(A,i)))))
-```
 
-#### Take & Drop
-
-```
-# TAKE (polyfill)
-
-A: m x n
-i: number
-j: number
-returns: i x j
-
-=LAMBDA(A,[i],[j],
-  LET(
-    m,ROWS(A),
-    n,COLUMNS(A),
-    i,IF(ISOMITTED(i),m,i),
-    j,IF(ISOMITTED(j),n,j),
-    INDEX(A,SEQUENCE(i),SEQUENCE(,j))))
-
-
-# DROP (polyfill)
-
-A: m x n
-i: number
-j: number
-returns: m-i x n-j
-
-=LAMBDA(A,[i],[j],
-  LET(
-    m,ROWS(A),
-    n,COLUMNS(A),
-    i,IF(ISOMITTED(i),0,i),
-    j,IF(ISOMITTED(j),0,j),
-    INDEX(A,SEQUENCE(m-i,,i+1),SEQUENCE(,n-j,j+1))))
 ```
 
 #### Lookup table column values
@@ -274,6 +240,7 @@ returns: boolean
     case_sensitive,IF(ISOMITTED(case_sensitive),FALSE),
     OR(NOT(ISERROR(SEARCH("*"&find_text&"*",within_text))))))
 
+
 # TEXTREPLACE
 
 =LAMBDA(text,old_text_new_text_alternating_array,
@@ -287,111 +254,14 @@ returns: boolean
 #### Data manipulation
 
 ```
-# TEXTSPLIT (polyfill)
-
-string: string
-separator: character
-returns: m x 1
-
-=LAMBDA(string,separator,
-  LET(
-    string,separator&string&separator,
-    char_indexes,SEQUENCE(LEN(string)),
-    chars,MID(string,char_indexes,1),
-    sep_indexes,FILTER(char_indexes,chars=separator),
-    indexes,SEQUENCE(ROWS(sep_indexes)-1),
-    start_nums,INDEX(sep_indexes,indexes)+1,
-    num_chars,INDEX(sep_indexes,indexes+1)-start_nums,
-    MID(string,start_nums,num_chars)))
-
-
-# VSTACK (polyfill)
-
-A: m_a x n_a
-B: m_b x n_b
-returns: m_a + m_b x max(n_a,n_b)
-
-=LAMBDA(A,B,
-  LET(
-    m_a,ROWS(A),
-    m_b,ROWS(B),
-    n_a,COLUMNS(A),
-    n_b,COLUMNS(B),
-    n,MAX(n_a,n_b),
-    i,SEQUENCE(m_a+m_b),
-    j,SEQUENCE(,n),
-    IF(i<=m_a,INDEX(A,i,j),INDEX(B,i-m_a,j))))
-
-
-# HSTACK (polyfill)
-
-A: m_a x n_a
-B: m_b x n_b
-returns: max(m_a,m_b) x n_a + n_b
-
-=LAMBDA(A,B,
-  LET(
-    m_a,ROWS(A),
-    m_b,ROWS(B),
-    n_a,COLUMNS(A),
-    n_b,COLUMNS(B),
-    m,MAX(m_a,m_b),
-    i,SEQUENCE(m),
-    j,SEQUENCE(,n_a+n_b),
-    IF(j<=n_a,INDEX(A,i,j),INDEX(B,i,j-n_a))))
-
-
-# DICT
-
-=LAMBDA(key1,value1,[d],
-  LAMBDA(key,
-    IF(key=key1,value1,d(key))))
-
-
-# RESHAPE
-
-A: m_a x n_a
-m: number
-returns: m x (m_a*n_a)/m
-
-=LAMBDA(A,m,
-  LET(
-    m_a,ROWS(A),
-    n_a,COLUMNS(A),
-    n,(m_a*n_a)/m+N(MOD(m_a*n_a,m)>0),
-    r,SEQUENCE(m),
-    c,SEQUENCE(,n),
-    i,(c-1)*m+r-1,
-    INDEX(A,MOD(i,m_a)+1,i/m_a+1)))
-
-
-# FLATTEN
-
-A: m x n
-returns: m*n x 1
-
-=LAMBDA(A,
-  LET(
-    m_a,ROWS(A),
-    n_a,COLUMNS(A),
-    m,m_a*n_a,
-    i,SEQUENCE(m,,0),
-    INDEX(A,MOD(i,m_a)+1,i/m_a+1)))
-
 
 # MAPROWS
 
-A: m x n
-function: 1 x n -> 1 x n_out
-returns: m x n_out
-
-=LAMBDA(A,function,
-  LET(
-    A_head,TAKE(A,1),
-    A_tail,DROP(A,1),
-    initial_value,RESHAPE(function(A_head),1),
-    REDUCE(initial_value,A_tail,LAMBDA(B,a_row,
-      VSTACK(B,RESHAPE(function(a_row),1))))))
+=LAMBDA(data;func;
+  REDUCE(
+    func(INDEX(data;1;));
+    SEQUENCE(ROWS(data)-1;;2);
+    LAMBDA(result;idx;VSTACK(result;func(INDEX(data;idx;))))))
 
 
 # CARTESIANPRODUCT
