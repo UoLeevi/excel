@@ -24,7 +24,7 @@ AddLambdaNamedRangesFromFile(Array("TEXTREPLACE", "CARTESIANPRODUCT"))
 
 ## Lambda functions
 
-#### Ordinary least squares
+### Ordinary least squares
 
 ```
 # OLS
@@ -36,7 +36,7 @@ returns: m x 1
 =LAMBDA(y,X,MMULT(MMULT(MINVERSE(MMULT(TRANSPOSE(X),X)),TRANSPOSE(X)),y))
 ```
 
-#### Bounded variable least squares (implemented using gradient descent)
+### Bounded variable least squares (implemented using gradient descent)
 
 ```
 # BVLS - using recursion
@@ -92,7 +92,7 @@ returns: m x 1
     TRANSPOSE(y_max/x_max)*REDUCE(_w,SEQUENCE(_iterations),GRADIENT_DESCENT_BVLS)))
 ```
 
-#### Constrained least squares
+### Constrained least squares
 
 ```
 # CLS
@@ -159,7 +159,7 @@ returns: m x 1
       w_2)))
 ```
 
-#### Aggregation functions
+### Aggregation functions
 
 ```
 # SUMROW
@@ -211,7 +211,7 @@ returns: m x 1
 
 ```
 
-#### Lookup table column values
+### Lookup table column values
 
 ```
 # CLOOKUP
@@ -225,7 +225,7 @@ returns m x n_out
 
 ```
 
-#### Text functions
+### Text functions
 
 ```
 # TEXTCONTAINSANY
@@ -251,7 +251,7 @@ returns: boolean
 
 ```
 
-#### Data manipulation
+### Data manipulation
 
 ```
 
@@ -345,7 +345,9 @@ returns: boolean
 
 ```
 
-#### Hieararchies
+### Hieararchies
+
+![lambda-hierarchies](images/lambda-hierarchies.gif)
 
 ```
 
@@ -467,7 +469,7 @@ returns: boolean
 
 ```
 
-#### Data preparation
+### Data preparation
 
 ```
 # PREPARECOLS
@@ -514,7 +516,7 @@ returns: boolean
       NA())))))
 ```
 
-#### Resampling
+### Resampling
 
 ```
 # RANDOMARRAY
@@ -655,7 +657,7 @@ TODO: nested arrays are not supported
 
 ## VBA Macros
 
-````vb
+```vb
 
 ' For each item in `sheetNames` array, copy `wsTemplate` and call a macro with name `callbackName`
 ' Usage:
@@ -782,4 +784,4 @@ Sub AddLambdaNamedRangesFromFile( _
 
 End Sub
 
-````
+```
