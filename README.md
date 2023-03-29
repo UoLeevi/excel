@@ -271,7 +271,13 @@ returns: boolean
     APPLYWHILE(func(initial_value),cond_func,func),
     initial_value))
 
+```
 
+### Cartesian product
+
+![lambda-cartesian](images/lambda-cartesian.gif)
+
+```
 # CARTESIANPRODUCT
 
 =LAMBDA(a_1,[a_2],[a_3],[a_4],[a_5],[a_6],[a_7],[a_8],[a_9],
