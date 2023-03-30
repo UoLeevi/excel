@@ -159,58 +159,6 @@ returns: m x 1
       w_2)))
 ```
 
-### Aggregation functions
-
-```
-# SUMROW
-
-A: m x n
-returns: 1 x n
-
-=LAMBDA(A,MMULT(SEQUENCE(,ROWS(A),1,0),A))
-
-
-# SUMCOLUMN
-
-A: m x n
-returns: m x 1
-
-=LAMBDA(A,MMULT(A,SEQUENCE(COLUMNS(A),,1,0)))
-
-
-# MAXROW
-
-A: m x n
-returns: 1 x n
-
-=LAMBDA(A,MAP(SEQUENCE(,COLUMNS(A)),LAMBDA(i,MAX(INDEX(A,,i)))))
-
-
-# MAXCOLUMN
-
-A: m x n
-returns: m x 1
-
-=LAMBDA(A,MAP(SEQUENCE(ROWS(A)),LAMBDA(i,MAX(INDEX(A,i)))))
-
-
-# MINROW
-
-A: m x n
-returns: 1 x n
-
-=LAMBDA(A,MAP(SEQUENCE(,COLUMNS(A)),LAMBDA(i,MIN(INDEX(A,,i)))))
-
-
-# MINCOLUMN
-
-A: m x n
-returns: m x 1
-
-=LAMBDA(A,MAP(SEQUENCE(ROWS(A)),LAMBDA(i,MIN(INDEX(A,i)))))
-
-```
-
 ### Lookup table column values
 
 ```
