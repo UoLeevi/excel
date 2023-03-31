@@ -175,8 +175,10 @@ returns m x n_out
 
 ### Aggragations
 
-```
+**Documentation**  
+- [FILTER_BETWEEN_SORTED_ASC](docs/filter-between-sorted-asc.md)
 
+```
 # FILTER_BETWEEN_SORTED_ASC
 
 =LAMBDA(range,sorted_criteria_range,criteria_from,criteria_to,
@@ -188,7 +190,6 @@ returns m x n_out
         first_cell,INDEX(range,first_row,1),
         last_cell,INDEX(range,last_row,1),
         first_cell:last_cell))))
-
 ```
 
 ### Text functions
