@@ -173,6 +173,24 @@ returns m x n_out
 
 ```
 
+### Aggragations
+
+```
+
+# FILTER_BETWEEN_SORTED_ASC
+
+=LAMBDA(range,sorted_criteria_range,criteria_from,criteria_to,
+  LET(
+    first_row,XMATCH(criteria_from,sorted_criteria_range,0,2),
+    IF(ISNA(first_row),NA(),
+      LET(
+        last_row,XMATCH(criteria_to,sorted_criteria_range,-1,-1),
+        first_cell,INDEX(range,first_row,1),
+        last_cell,INDEX(range,last_row,1),
+        first_cell:last_cell))))
+
+```
+
 ### Text functions
 
 ```
