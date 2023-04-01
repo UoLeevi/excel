@@ -20,7 +20,6 @@
 =FILTER_BETWEEN_SORTED_ASC(A2:A100, B2:B100, 10, 20)
 ```
 
-
 This example returns a range of cells within the `A2:A100` range that have corresponding values in the `B2:B100` range between `10` and `20`, inclusive.
 
 **Notes**

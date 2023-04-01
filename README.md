@@ -74,8 +74,8 @@ returns: m x 1
 
 =LAMBDA(y,X,lbound,ubound,iterations,learning_rate,
   LET(
-    x_max,MAXROW(X),
-    y_max,MAXROW(y),
+    x_max,BYROW(X,LAMBDA(v,MAX(v))),
+    y_max,BYROW(y,LAMBDA(v,MAX(v))),
     _ones_m,SEQUENCE(ROWS(X),,1,0),
     _ones_n,SEQUENCE(COLUMNS(X),,1,0),
     _y,y/y_max,
@@ -104,8 +104,8 @@ returns: m x 1
     b_1,IF(ISOMITTED(b_1),0.9,b_1),
     b_2,IF(ISOMITTED(b_2),0.999,b_2),
     e,IF(ISOMITTED(e),0.00000001,e),
-    y_max,MAXROW(ABS(y)),
-    x_max,MAXROW(ABS(X)),
+    y_max,BYROW(ABS(y),LAMBDA(v,MAX(v))),
+    x_max,BYROW(ABS(X),LAMBDA(v,MAX(v))),
     _ones_m,SEQUENCE(ROWS(X),,1,0),
     _ones_n,SEQUENCE(COLUMNS(X),,1,0),
     _y,y/y_max,
@@ -176,7 +176,7 @@ returns m x n_out
 ### Aggragations
 
 **Documentation**  
-- [FILTER_BETWEEN_SORTED_ASC](docs/filter-between-sorted-asc.md)
+[FILTER_BETWEEN_SORTED_ASC](docs/filter-between-sorted-asc.md)
 
 ```
 # FILTER_BETWEEN_SORTED_ASC
@@ -193,6 +193,9 @@ returns m x n_out
 ```
 
 ### Text functions
+
+**Documentation**  
+[TEXTREPLACE](docs/textreplace.md)
 
 ```
 # TEXTCONTAINSANY
@@ -243,6 +246,9 @@ returns: boolean
 ### Cartesian product
 
 ![lambda-cartesian](images/lambda-cartesian.gif)
+
+**Documentation**  
+[CARTESIANPRODUCT](docs/cartesianproduct.md)
 
 ```
 # CARTESIANPRODUCT
