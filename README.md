@@ -26,6 +26,8 @@ AddLambdaNamedRangesFromFile(Array("TEXTREPLACE", "CARTESIANPRODUCT"))
 
 ### Ordinary least squares
 
+![lambda-ols](images/lambda-ols.gif)
+
 ```
 # OLS
 
@@ -74,8 +76,8 @@ returns: m x 1
 
 =LAMBDA(y,X,lbound,ubound,iterations,learning_rate,
   LET(
-    x_max,BYROW(X,LAMBDA(v,MAX(v))),
-    y_max,BYROW(y,LAMBDA(v,MAX(v))),
+    x_max,BYCOL(X,LAMBDA(v,MAX(v))),
+    y_max,BYCOL(y,LAMBDA(v,MAX(v))),
     _ones_m,SEQUENCE(ROWS(X),,1,0),
     _ones_n,SEQUENCE(COLUMNS(X),,1,0),
     _y,y/y_max,
@@ -104,8 +106,8 @@ returns: m x 1
     b_1,IF(ISOMITTED(b_1),0.9,b_1),
     b_2,IF(ISOMITTED(b_2),0.999,b_2),
     e,IF(ISOMITTED(e),0.00000001,e),
-    y_max,BYROW(ABS(y),LAMBDA(v,MAX(v))),
-    x_max,BYROW(ABS(X),LAMBDA(v,MAX(v))),
+    y_max,BYCOL(ABS(y),LAMBDA(v,MAX(v))),
+    x_max,BYCOL(ABS(X),LAMBDA(v,MAX(v))),
     _ones_m,SEQUENCE(ROWS(X),,1,0),
     _ones_n,SEQUENCE(COLUMNS(X),,1,0),
     _y,y/y_max,
