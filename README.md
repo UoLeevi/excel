@@ -332,34 +332,41 @@ returns: boolean
 
 # CROSSTAB
 
-=LAMBDA(table,[row_fields],[column_fields],[value_func],
+=LAMBDA(table;[row_fields];[column_fields];[value_func];
   LET(
-    min_column_count,IF(ISOMITTED(value_func),0,1),
-    vec_row_fields,TOCOL(row_fields),
-    vec_column_fields,TOCOL(column_fields),
-    headers,INDEX(table,1,),
-    data,DROP(table,1),
-    row_idx,XMATCH(vec_row_fields,headers),
-    column_idx,XMATCH(vec_column_fields,headers),
-    n_row_fields,IF(ISOMITTED(row_fields),0,ROWS(row_idx)),
-    n_column_fields,IF(ISOMITTED(column_fields),0,ROWS(column_idx)),
-    row_keys,UNIQUE(CHOOSECOLS(data,row_idx)),
-    column_keys,UNIQUE(CHOOSECOLS(data,column_idx)),
-    sort_by_col_func,LAMBDA(array,i,SORT(array,i)),
-    row_keys_sorted,REDUCE(row_keys,SEQUENCE(n_row_fields,,n_row_fields,-1),sort_by_col_func),
-    column_keys_sorted,REDUCE(column_keys,SEQUENCE(n_column_fields,,n_column_fields,-1),sort_by_col_func),
-    n_row_keys,IF(ISOMITTED(row_fields),0,ROWS(row_keys)),
-    n_column_keys,IF(ISOMITTED(column_fields),0,ROWS(column_keys)),
+    min_column_count;IF(ISOMITTED(value_func);0;1);
+    vec_row_fields;TOCOL(row_fields);
+    vec_column_fields;TOCOL(column_fields);
+    headers;INDEX(table;1;);
+    data;DROP(table;1);
+    row_idx;XMATCH(vec_row_fields;headers);
+    column_idx;XMATCH(vec_column_fields;headers);
+    n_row_fields;IF(ISOMITTED(row_fields);0;ROWS(row_idx));
+    n_column_fields;IF(ISOMITTED(column_fields);0;ROWS(column_idx));
+    row_keys;UNIQUE(CHOOSECOLS(data;row_idx));
+    column_keys;UNIQUE(CHOOSECOLS(data;column_idx));
+    sort_by_col_func;LAMBDA(array;i;SORT(array;i));
+    row_keys_sorted;REDUCE(row_keys;SEQUENCE(n_row_fields;;n_row_fields;-1);sort_by_col_func);
+    column_keys_sorted;REDUCE(column_keys;SEQUENCE(n_column_fields;;n_column_fields;-1);sort_by_col_func);
+    n_row_keys;IF(ISOMITTED(row_fields);0;ROWS(row_keys));
+    n_column_keys;IF(ISOMITTED(column_fields);0;ROWS(column_keys));
+    get_args;IFS(
+      ISOMITTED(row_fields);LAMBDA(r;c;INDEX(column_keys_sorted;c;));
+      ISOMITTED(column_fields);LAMBDA(r;c;INDEX(row_keys_sorted;r;));
+      TRUE;LAMBDA(r;c;HSTACK(
+        INDEX(row_keys_sorted;r-n_column_fields;);
+        INDEX(column_keys_sorted;c-n_row_fields;)))
+    );
     MAKEARRAY(
-      n_column_fields+MAX(min_column_count,n_row_keys),
-      n_row_fields+MAX(min_column_count,n_column_keys),
-      LAMBDA(r,c,
+      n_column_fields+MAX(min_column_count;n_row_keys);
+      n_row_fields+MAX(min_column_count;n_column_keys);
+      LAMBDA(r;c;
         IFS(
-          AND(r<=n_column_fields,c<=n_row_fields),"",
-          r<=n_column_fields,INDEX(column_keys_sorted,c-n_row_fields,r),
-          c<=n_row_fields,INDEX(row_keys_sorted,r-n_column_fields,c),
-          ISOMITTED(value_func),"",
-          TRUE,value_func(HSTACK(INDEX(row_keys_sorted,r-n_column_fields,),INDEX(column_keys_sorted,c-n_row_fields,)))
+          AND(r<=n_column_fields;c<=n_row_fields);"";
+          r<=n_column_fields;INDEX(column_keys_sorted;c-n_row_fields;r);
+          c<=n_row_fields;INDEX(row_keys_sorted;r-n_column_fields;c);
+          ISOMITTED(value_func);"";
+          TRUE;value_func(get_args(r;c))
         )))))
 
 ```
