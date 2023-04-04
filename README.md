@@ -345,9 +345,8 @@ returns: boolean
     n_column_fields,IF(ISOMITTED(column_fields),0,ROWS(column_idx)),
     row_keys,UNIQUE(CHOOSECOLS(data,row_idx)),
     column_keys,UNIQUE(CHOOSECOLS(data,column_idx)),
-    sort_by_col_func,LAMBDA(array,i,SORT(array,i)),
-    row_keys_sorted,REDUCE(row_keys,SEQUENCE(n_row_fields,,n_row_fields,-1),sort_by_col_func),
-    column_keys_sorted,REDUCE(column_keys,SEQUENCE(n_column_fields,,n_column_fields,-1),sort_by_col_func),
+    row_keys_sorted,SORT(row_keys,SEQUENCE(n_row_fields)),
+    column_keys_sorted,SORT(column_keys,SEQUENCE(n_column_fields)),
     n_row_keys,IF(ISOMITTED(row_fields),0,ROWS(row_keys)),
     n_column_keys,IF(ISOMITTED(column_fields),0,ROWS(column_keys)),
     get_args,IFS(
