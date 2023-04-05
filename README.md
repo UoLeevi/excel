@@ -329,7 +329,6 @@ returns: boolean
 ### Crosstab
 
 ```
-
 # CROSSTAB
 
 =LAMBDA(table,[row_fields],[column_fields],[value_func],
@@ -338,23 +337,25 @@ returns: boolean
     vec_row_fields,TOCOL(row_fields),
     vec_column_fields,TOCOL(column_fields),
     headers,INDEX(table,1,),
-    data,DROP(table,1),
     row_idx,XMATCH(vec_row_fields,headers),
     column_idx,XMATCH(vec_column_fields,headers),
     n_row_fields,IF(ISOMITTED(row_fields),0,ROWS(row_idx)),
     n_column_fields,IF(ISOMITTED(column_fields),0,ROWS(column_idx)),
+    field_idx,IFS(
+      n_row_fields=0,column_idx,
+      n_column_fields=0,row_idx,
+      TRUE,VSTACK(row_idx,column_idx)),
+    data,SORT(DROP(table,1),UNIQUE(field_idx)),
     row_keys,UNIQUE(CHOOSECOLS(data,row_idx)),
     column_keys,UNIQUE(CHOOSECOLS(data,column_idx)),
-    row_keys_sorted,SORT(row_keys,SEQUENCE(n_row_fields)),
-    column_keys_sorted,SORT(column_keys,SEQUENCE(n_column_fields)),
     n_row_keys,IF(ISOMITTED(row_fields),0,ROWS(row_keys)),
     n_column_keys,IF(ISOMITTED(column_fields),0,ROWS(column_keys)),
     get_args,IFS(
-      ISOMITTED(row_fields),LAMBDA(r,c,INDEX(column_keys_sorted,c,)),
-      ISOMITTED(column_fields),LAMBDA(r,c,INDEX(row_keys_sorted,r,)),
+      ISOMITTED(row_fields),LAMBDA(r,c,INDEX(column_keys,c,)),
+      ISOMITTED(column_fields),LAMBDA(r,c,INDEX(row_keys,r,)),
       TRUE,LAMBDA(r,c,HSTACK(
-        INDEX(row_keys_sorted,r-n_column_fields,),
-        INDEX(column_keys_sorted,c-n_row_fields,)))
+        INDEX(row_keys,r-n_column_fields,),
+        INDEX(column_keys,c-n_row_fields,)))
     ),
     MAKEARRAY(
       n_column_fields+MAX(min_column_count,n_row_keys),
@@ -362,12 +363,11 @@ returns: boolean
       LAMBDA(r,c,
         IFS(
           AND(r<=n_column_fields,c<=n_row_fields),"",
-          r<=n_column_fields,INDEX(column_keys_sorted,c-n_row_fields,r),
-          c<=n_row_fields,INDEX(row_keys_sorted,r-n_column_fields,c),
+          r<=n_column_fields,INDEX(column_keys,c-n_row_fields,r),
+          c<=n_row_fields,INDEX(row_keys,r-n_column_fields,c),
           ISOMITTED(value_func),"",
           TRUE,value_func(get_args(r,c))
         )))))
-
 ```
 
 ### Hieararchies
