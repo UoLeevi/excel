@@ -175,7 +175,7 @@ returns m x n_out
 
 ```
 
-### Aggragations
+### Fast operations for sorted data
 
 **Documentation**  
 [FILTER_BETWEEN_SORTED_ASC](docs/filter-between-sorted-asc.md)
@@ -192,6 +192,16 @@ returns m x n_out
         first_cell,INDEX(range,first_row,1),
         last_cell,INDEX(range,last_row,1),
         first_cell:last_cell))))
+
+# INDEXOF_UNIQUE_SORTED_ASC
+
+=LAMBDA(sorted_keys,
+  LET(
+    n_keys,ROWS(sorted_keys),
+    seq,SEQUENCE(n_keys-1,,2),
+    VSTACK(1,FILTER(seq,MAP(seq,
+      LAMBDA(i,OR(INDEX(sorted_keys,i,)<>INDEX(sorted_keys,i-1,))))),n_keys+1)))
+
 ```
 
 ### Text functions
