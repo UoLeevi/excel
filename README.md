@@ -181,6 +181,17 @@ returns m x n_out
 [FILTER_BETWEEN_SORTED_ASC](docs/filter-between-sorted-asc.md)
 
 ```
+# XMATCH_BYROW_SORTED_ASC
+
+'TODO: Make faster by using binary search
+
+=LAMBDA(lookup_value;lookup_range;
+  1+LET(
+    seq;SEQUENCE(COLUMNS(lookup_value));
+    BYROW(lookup_value;LAMBDA(keys;REDUCE(0;seq;
+      LAMBDA(r;c;
+        INDEX(r;1;1)-1+XMATCH(INDEX(keys;1;c);DROP(INDEX(lookup_range;;c);INDEX(r;1;1));0;1)))))))
+
 # FILTER_BETWEEN_SORTED_ASC
 
 =LAMBDA(range,sorted_criteria_range,criteria_from,criteria_to,
