@@ -183,14 +183,12 @@ returns m x n_out
 ```
 # XMATCH_BYROW_SORTED_ASC
 
-'TODO: Fix bug to limit search on non-first columns past the match range from first column
-
 =LAMBDA(lookup_value,lookup_range,
   LET(
     n_cols,COLUMNS(lookup_value),
     \1,"Use binary search to find match in first lookup column",
     first_rows,XMATCH(INDEX(lookup_value,,1),INDEX(lookup_range,,1),0,2),
-    IF(n_cols=1,first_rows,1+LET(
+    IF(n_cols=1,first_rows,LET(
       \2,"Use linear search to find matches in remaining columns",
       seq_cols,SEQUENCE(n_cols-1,,2),
       n_rows,ROWS(lookup_value),
@@ -198,9 +196,11 @@ returns m x n_out
       MAP(seq_rows,LAMBDA(i,LET(
         first_row,INDEX(first_rows,i,1),
         keys,INDEX(lookup_value,i,),
-        REDUCE(first_row-1,seq_cols,
+        match_row,1+REDUCE(first_row-1,seq_cols,
           LAMBDA(r,c,
-            INDEX(r,1,1)-1+XMATCH(INDEX(keys,1,c),DROP(INDEX(lookup_range,,c),INDEX(r,1,1)),0,1))))))))))
+            INDEX(r,1,1)-1+XMATCH(INDEX(keys,1,c),DROP(INDEX(lookup_range,,c),INDEX(r,1,1)),1,1))),
+         is_match,AND(keys=INDEX(lookup_range,match_row)),
+         IF(is_match,match_row,NA()))))))))
 
 # FILTER_BETWEEN_SORTED_ASC
 
