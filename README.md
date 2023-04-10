@@ -362,32 +362,48 @@ returns: boolean
 ```
 # CROSSTAB
 
-=LAMBDA(table,[row_fields],[column_fields],[value_func],
+=LAMBDA(table,[row_fields],[column_fields],[value_fields],[agg_func],
   LET(
-    min_column_count,IF(ISOMITTED(value_func),0,1),
+    min_column_count,IF(ISOMITTED(agg_func),0,1),
     vec_row_fields,TOCOL(row_fields),
     vec_column_fields,TOCOL(column_fields),
+    vec_value_fields,TOCOL(value_fields),
     headers,INDEX(table,1,),
     row_idx,XMATCH(vec_row_fields,headers),
     column_idx,XMATCH(vec_column_fields,headers),
+    value_idx,XMATCH(vec_value_fields,headers),
     n_row_fields,IF(ISOMITTED(row_fields),0,ROWS(row_idx)),
     n_column_fields,IF(ISOMITTED(column_fields),0,ROWS(column_idx)),
-    field_idx,IFS(
+    n_value_fields,IF(ISOMITTED(value_fields),0,ROWS(value_idx)),
+    key_idx,UNIQUE(IFS(
       n_row_fields=0,column_idx,
       n_column_fields=0,row_idx,
-      TRUE,VSTACK(row_idx,column_idx)),
-    data,SORT(DROP(table,1),UNIQUE(field_idx)),
+      TRUE,VSTACK(row_idx,column_idx))),
+    data,SORT(DROP(table,1),key_idx),
+    n_data,ROWS(data),
+    keys,CHOOSECOLS(data,key_idx),
+    uq_keys_idx,INDEXOF_UNIQUE_SORTED_ASC(keys),
+    values,CHOOSECOLS(data,value_idx),
+    results,MAP(
+      DROP(uq_keys_idx,-1),
+      DROP(uq_keys_idx,1),
+      LAMBDA(idx_first,idx_next,
+        LET(
+          data_subset,TAKE(DROP(data,idx_first-1),idx_next-idx_first),
+          values_subset,TAKE(DROP(values,idx_first-1),idx_next-idx_first),
+          key_args,INDEX(keys,idx_first,),
+          agg_func(values_subset,data_subset,key_args)))),
     row_keys,UNIQUE(CHOOSECOLS(data,row_idx)),
     column_keys,UNIQUE(CHOOSECOLS(data,column_idx)),
     n_row_keys,IF(ISOMITTED(row_fields),0,ROWS(row_keys)),
     n_column_keys,IF(ISOMITTED(column_fields),0,ROWS(column_keys)),
-    get_args,IFS(
-      ISOMITTED(row_fields),LAMBDA(r,c,INDEX(column_keys,c,)),
-      ISOMITTED(column_fields),LAMBDA(r,c,INDEX(row_keys,r,)),
-      TRUE,LAMBDA(r,c,HSTACK(
-        INDEX(row_keys,r-n_column_fields,),
-        INDEX(column_keys,c-n_row_fields,)))
-    ),
+    n_key_fields,ROWS(key_idx),
+    seq_key_fields,SEQUENCE(n_key_fields-1,,2),
+    keys_and_results,HSTACK(UNIQUE(keys),results),
+    lookup_result,LAMBDA(key,LET(
+      key_row,XMATCH_BYROW_SORTED_ASC(key,TAKE(keys_and_results,,n_key_fields)),
+      key_and_result,INDEX(keys_and_results,INDEX(key_row,1,1),),
+      DROP(key_and_result,,n_key_fields))),
     MAKEARRAY(
       n_column_fields+MAX(min_column_count,n_row_keys),
       n_row_fields+MAX(min_column_count,n_column_keys),
@@ -397,8 +413,14 @@ returns: boolean
           r<=n_column_fields,INDEX(column_keys,c-n_row_fields,r),
           c<=n_row_fields,INDEX(row_keys,r-n_column_fields,c),
           ISOMITTED(value_func),"",
-          TRUE,value_func(get_args(r,c))
-        )))))
+          TRUE,LET(
+            row_key,TOROW(INDEX(row_keys,r-n_column_fields,)),
+            column_key,TOROW(INDEX(column_keys,c-n_row_fields,)),
+            key,IFS(
+              n_row_fields=0,column_key,
+              n_column_fields=0,row_key,
+              TRUE,HSTACK(row_key,column_key)),
+            lookup_result(key)))))))
 ```
 
 ### Hieararchies
