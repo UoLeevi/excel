@@ -362,7 +362,7 @@ returns: boolean
 ```
 # CROSSTAB
 
-=LAMBDA(table,[row_fields],[column_fields],[value_fields],[agg_func],
+=LAMBDA(table,[row_fields],[column_fields],[value_fields],[agg_func],[na_value],
   LET(
     min_column_count,IF(ISOMITTED(agg_func),0,1),
     vec_row_fields,TOCOL(row_fields),
@@ -403,7 +403,7 @@ returns: boolean
     lookup_result,LAMBDA(key,LET(
       key_row,XMATCH_BYROW_SORTED_ASC(key,TAKE(keys_and_results,,n_key_fields)),
       key_and_result,INDEX(keys_and_results,INDEX(key_row,1,1),),
-      DROP(key_and_result,,n_key_fields))),
+      IFNA(DROP(key_and_result,,n_key_fields),na_value))),
     MAKEARRAY(
       n_column_fields+MAX(min_column_count,n_row_keys),
       n_row_fields+MAX(min_column_count,n_column_keys),
