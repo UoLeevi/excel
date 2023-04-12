@@ -421,6 +421,12 @@ returns: boolean
               n_column_fields=0,row_key,
               TRUE,HSTACK(row_key,column_key)),
             lookup_result(key)))))))
+
+
+# CROSSTAB.SUM
+
+=LAMBDA(values,data,keys,SUM(values))
+
 ```
 
 ### Hieararchies
