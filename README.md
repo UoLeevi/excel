@@ -427,6 +427,14 @@ returns: boolean
 
 =LAMBDA(values,data,keys,SUM(values))
 
+
+# CROSSTAB.FILTER
+
+=LAMBDA(predicate,agg_func,
+  LAMBDA(values,data,keys,LET(
+    condition,BYROW(data,predicate),
+    agg_func(FILTER(values,condition),FILTER(data,condition),keys))))
+
 ```
 
 ### Hieararchies
