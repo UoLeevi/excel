@@ -814,6 +814,8 @@ Sub AddLambdaNamedRangesFromFile( _
     Optional ByVal filePathOrUrl As String, _
     Optional ByVal wb As Workbook)
 
+    If VarType(lambdasToImport) = vbString Then lambdasToImport = Array(lambdasToImport)
+
     If filePathOrUrl = Empty Then filePathOrUrl = "https://raw.githubusercontent.com/UoLeevi/excel/main/README.md"
 
     If wb Is Nothing Then Set wb = ActiveWorkbook
