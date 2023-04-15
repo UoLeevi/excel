@@ -433,7 +433,7 @@ returns: boolean
 =LAMBDA(predicate,agg_func,
   LAMBDA(values,data,keys,LET(
     condition,BYROW(data,predicate),
-    agg_func(FILTER(values,condition),FILTER(data,condition),keys))))
+    agg_func(FILTER(values,condition,0),FILTER(data,condition,0),keys))))
 
 ```
 
