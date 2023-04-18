@@ -359,6 +359,8 @@ returns: boolean
 
 ### Crosstab
 
+![lambda-crosstab](images/lambda-crosstab.gif)
+
 ```
 # CROSSTAB
 
