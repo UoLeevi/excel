@@ -252,6 +252,22 @@ returns: boolean
     seq,SEQUENCE(ROWS(pairs)),
     REDUCE(text,seq,LAMBDA(result,r,SUBSTITUTE(result,INDEX(pairs,r,1),INDEX(pairs,r,2))))))
 
+# LONGESTCOMMONSUBSTRING
+
+=LAMBDA(text_1,text_2,
+  LET(
+    len_1,LEN(text_1),
+    len_2,LEN(text_2),
+    matches,MAKEARRAY(len_2,len_1,LAMBDA(i,j,MID(text_2,i,1)=MID(text_1,j,1))),
+    n_diag,len_1+len_2-1,
+    len_longest_diag,MIN(len_1,len_2),
+    MAX(MAKEARRAY(n_diag,1,LAMBDA(i_diag,_,LET(
+      i_first,IF(i_diag<=len_1,1,i_diag-len_1+1),
+      j_first,IF(i_first>1,1,len_1-i_diag+1),
+      len_diag,MIN(len_longest_diag,len_2-i_first+1,len_1-j_first+1),
+      MAX(SCAN(0,SEQUENCE(len_diag,,0),LAMBDA(z,k,IF(INDEX(matches,i_first+k,j_first+k),z+1,0))))))))))
+
+
 ```
 
 ### Data manipulation
