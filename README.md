@@ -476,9 +476,16 @@ returns: boolean
     IF(OR(is_leaf,is_last_level),
       IF(is_excluded,NA(),record),
       LET(
-        get_descendants_with_levels,LAMBDA(result,child,VSTACK(result,HIERARCHIZE(child,keys,parents,,max_level,level+NOT(is_excluded),filter_key_predicate))),
+        get_descendants_with_levels,LAMBDA(result,child,LET(
+          descendant_hierarchy,HIERARCHIZE(child,keys,parents,,max_level,level+NOT(is_excluded),filter_key_predicate),
+          IF(ISNA(INDEX(descendant_hierarchy,1,1)),result,VSTACK(result,descendant_hierarchy))
+        )),
         hierarchy,REDUCE(record,children,get_descendants_with_levels),
-        IF(is_excluded,DROP(hierarchy,1),hierarchy)
+        IF(is_excluded,
+          IF(ROWS(hierarchy)=1,
+            NA(),
+            DROP(hierarchy,1)),
+          hierarchy)
       ))))
 
 
