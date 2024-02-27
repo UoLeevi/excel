@@ -455,7 +455,7 @@ returns: boolean
 
 ```
 
-### Hieararchies
+### Hierarchies
 
 ![lambda-hierarchies](images/lambda-hierarchies.gif)
 
@@ -467,18 +467,19 @@ returns: boolean
   LET(
     parents,IF(ISOMITTED(sort_keys),parents,SORTBY(parents,sort_keys)),
     keys,IF(ISOMITTED(sort_keys),keys,SORTBY(keys,sort_keys)),
-    lookup_parent,LAMBDA(key,XLOOKUP(key,keys,parents)),
-    not_filter_key_predicate,LAMBDA(key,AND(NOT(ISNA(key)),NOT(filter_key_predicate(key)))),
-    lookup_filtered_parent,LAMBDA(key,IFNA(APPLYWHILE(lookup_parent(key),not_filter_key_predicate,lookup_parent),"")),
-    filtered_keys,IF(ISOMITTED(filter_key_predicate),keys,FILTER(keys,BYROW(keys,filter_key_predicate))),
-    filtered_parents,IF(ISOMITTED(filter_key_predicate),parents,BYROW(filtered_keys,lookup_filtered_parent)),
     level,IF(ISOMITTED(level),0,level),
-    children,UNIQUE(FILTER(filtered_keys,filtered_parents=root,NA())),
+    children,UNIQUE(FILTER(keys,parents=root,NA())),
     is_last_level,NOT(OR(ISOMITTED(max_level),level<max_level)),
     is_leaf,ISNA(INDEX(children,1,1)),
+    is_excluded,IF(ISOMITTED(filter_key_predicate),FALSE,NOT(filter_key_predicate(root))),
     record,HSTACK(root,level,is_leaf),
-    get_descendants_with_levels,LAMBDA(result,child,VSTACK(result,HIERARCHIZE(child,filtered_keys,filtered_parents,,max_level,level+1))),
-    IF(OR(is_leaf,is_last_level),record,REDUCE(record,children,get_descendants_with_levels))))
+    IF(OR(is_leaf,is_last_level),
+      IF(is_excluded,NA(),record),
+      LET(
+        get_descendants_with_levels,LAMBDA(result,child,VSTACK(result,HIERARCHIZE(child,keys,parents,,max_level,level+NOT(is_excluded),filter_key_predicate))),
+        hierarchy,REDUCE(record,children,get_descendants_with_levels),
+        IF(is_excluded,DROP(hierarchy,1),hierarchy)
+      ))))
 
 
 # HIERARCHY_GET
